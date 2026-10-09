@@ -17,7 +17,7 @@ export async function createServerSupabaseClient() {
         try {
           values.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
         } catch {
-          // shortcut: Server Components cannot set cookies, add the session refresh proxy in #4.
+          // Server Components cannot set cookies; proxy.ts persists refreshed sessions.
         }
       },
     },

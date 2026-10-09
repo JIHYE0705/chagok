@@ -62,3 +62,8 @@ jobs:
           diff -u lib/data/types.ts "$RUNNER_TEMP/database.types.ts"
       - run: npm run typecheck
       - run: npm test -- --run
+      - run: npm run lint
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Test local Auth sessions in browser
+        run: AUTH_E2E=1 npm run test:e2e
