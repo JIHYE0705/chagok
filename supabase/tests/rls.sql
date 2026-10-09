@@ -13,7 +13,8 @@ insert into public.profiles (id, display_name) select id, 'fixture' from auth.us
 insert into public.access_allowlist (google_subject) values ('test-google-subject');
 insert into public.items (id, user_id, title) values
   ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Owner recipe'),
-  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 'Other recipe');
+  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 'Other recipe'),
+  ('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000002', 'Other empty item');
 insert into public.item_contents (item_id, user_id, body, raw_text)
   select id, user_id, 'fixture body', 'fixture source' from public.items
   where id in ('10000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000002');
@@ -123,7 +124,7 @@ select throws_ok($$insert into public.access_allowlist values ('injected', now()
 select throws_ok($$update public.access_allowlist set google_subject = 'injected'$$, '42501', null, 'allowlist update denied');
 select throws_ok($$delete from public.access_allowlist$$, '42501', null, 'allowlist delete denied');
 
-select throws_ok($$update public.item_contents set item_id = '10000000-0000-0000-0000-000000000002'$$,
+select throws_ok($$update public.item_contents set item_id = '10000000-0000-0000-0000-000000000003'$$,
   '23503', null, 'cannot attach own content to another user item');
 select throws_ok($$update public.sources set item_id = '10000000-0000-0000-0000-000000000002'$$,
   '23503', null, 'cannot attach own source to another user item');
@@ -132,9 +133,9 @@ select throws_ok($$update public.attachments set item_id = '10000000-0000-0000-0
   '23503', null, 'cannot attach own metadata to another user item');
 select throws_ok($$update public.processing_jobs set item_id = '10000000-0000-0000-0000-000000000002'$$,
   '23503', null, 'cannot attach own job to another user item');
-select throws_ok($$update public.recipe_details set item_id = '10000000-0000-0000-0000-000000000002'$$,
+select throws_ok($$update public.recipe_details set item_id = '10000000-0000-0000-0000-000000000003'$$,
   '23503', null, 'cannot attach own recipe details to another user item');
-select throws_ok($$update public.recipe_steps set item_id = '10000000-0000-0000-0000-000000000002'$$,
+select throws_ok($$update public.recipe_steps set item_id = '10000000-0000-0000-0000-000000000002', position = 2$$,
   '23503', null, 'cannot attach own steps to another user recipe');
 select throws_ok($$update public.item_tags set tag_id = '40000000-0000-0000-0000-000000000002'$$,
   '23503', null, 'cannot attach another user tag');
