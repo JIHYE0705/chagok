@@ -208,6 +208,25 @@ h1 span {
 }
 
 
+.auth-card { max-width: 560px; }
+.auth-intro { padding: 40px 0 24px; }
+.auth-intro h1 { font-size: clamp(2rem, 6vw, 3rem); line-height: 1.4; }
+.auth-button {
+  min-height: 44px;
+  border: 1px solid #d8b955;
+  border-radius: 14px;
+  background: var(--yellow);
+  color: var(--ink);
+  padding: 10px 20px;
+  font: inherit;
+  cursor: pointer;
+}
+.auth-button:disabled { opacity: 0.65; cursor: wait; }
+.auth-message { padding: 16px; background: var(--pink); border-radius: 14px; }
+a { color: inherit; }
+.status-badge { text-decoration: none; }
+a:focus-visible, button:focus-visible { outline: 3px solid #6b83a1; outline-offset: 4px; }
+
 @media (max-width: 600px) {
   .app-shell {
     padding: 20px 16px;

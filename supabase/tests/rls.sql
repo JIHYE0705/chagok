@@ -8,9 +8,12 @@ select no_plan();
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-000000000001', 'owner@example.test'),
   ('00000000-0000-0000-0000-000000000002', 'other@example.test');
-insert into public.profiles (id, display_name) select id, 'fixture' from auth.users
+insert into public.profiles (id, display_name, status) select id, 'fixture', 'active' from auth.users
   where id in ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002');
-insert into public.access_allowlist (google_subject) values ('test-google-subject');
+insert into public.access_allowlist (google_subject) values ('test-google-subject'), ('test-other-subject');
+insert into auth.identities (user_id, provider_id, provider, identity_data) values
+  ('00000000-0000-0000-0000-000000000001', 'test-google-subject', 'google', '{"sub":"test-google-subject"}'),
+  ('00000000-0000-0000-0000-000000000002', 'test-other-subject', 'google', '{"sub":"test-other-subject"}');
 insert into public.items (id, user_id, title) values
   ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Owner recipe'),
   ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 'Other recipe'),

@@ -265,7 +265,12 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "authorize_current_user":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"has_app_access":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           }
           }
           Enums: {
             [_ in never]: never

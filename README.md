@@ -72,7 +72,8 @@ Playwright Chromium이 없다면 한 번만 설치합니다.
 npx playwright install chromium
 ```
 
-Supabase와 Google OAuth가 연결되기 전까지는 앱 환경 변수가 필요하지 않습니다. 비밀값은 절대 `.env`나 GitHub에 커밋하지 않습니다.
+안내 화면(`/`)은 환경 변수 없이 열 수 있습니다. 로그인에는 `.env.example`의 Supabase URL·publishable key와
+앱의 고정 주소 `APP_URL`이 필요합니다. `.env.local`에 설정하고 비밀값은 GitHub에 커밋하지 않습니다.
 
 ### Supabase 클라우드 연결
 
@@ -91,8 +92,26 @@ npx supabase gen types typescript --linked --schema public > lib/data/types.ts
 ```
 
 CLI 로그인은 본인 터미널에서 완료하고, DB 비밀번호가 요구되면 프롬프트에 직접 입력합니다.
-로그인·초기 Google 허용 목록 확인은 후속 인증 작업 #4에서 구현합니다. 현재 RLS는 인증된 사용자의 소유권을 검사하고,
-`profiles.status`와 `access_allowlist` 변경은 신뢰된 관리자/서버만 할 수 있습니다.
+로그인 후에는 `/items`에서 보호된 기본 보관함을 볼 수 있습니다. 저장·검색은 후속 #5에서 구현합니다.
+RLS는 소유권과 Google 허용 목록·활성 프로필을 함께 검사합니다. 허용 목록에서 삭제하거나 프로필을
+`disabled`로 바꾸면 기존 세션도 데이터에 접근할 수 없습니다. `profiles.status`와 `access_allowlist`는 사용자가 수정할 수 없습니다.
+
+### Google 로그인 설정
+
+1. Google Cloud에서 Web OAuth 클라이언트를 만들고, 승인된 리디렉션 URI에 Supabase 프로젝트의
+   `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`을 등록합니다.
+2. Supabase Auth의 Google 제공자를 활성화하고 Google client ID/secret을 설정합니다. Google secret은 앱에 넣지 않습니다.
+3. Supabase의 Site URL을 앱 주소로, Redirect URLs에 앱의 `/auth/callback`을 등록합니다.
+   로컬은 `http://localhost:3000/auth/callback`, 배포는 고정된 HTTPS 주소를 사용하고 `APP_URL`도 같은 origin으로 설정합니다.
+4. 초대할 계정으로 한 번 Google 로그인을 시도합니다. 첫 로그인은 허용 목록이 비어 있으면 거부됩니다.
+   신뢰된 Supabase SQL Editor에서 `auth.identities`의 `provider = 'google'` 행과 `auth.users`를 확인한 뒤
+   해당 계정의 `provider_id`를 `access_allowlist.google_subject`에 등록합니다. 이메일이나 사용자 수정 메타데이터를 식별자로 사용하지 않습니다.
+5. 다시 로그인해 `/items` 이동과 로그아웃 후 접근 차단을 확인합니다. 콜백은 고정된 `/items`로 이동하며 외부 `next` 주소를 받지 않습니다.
+
+허용 계정은 첫 성공 콜백에서 자신의 프로필만 활성화합니다. `disabled` 프로필은 로그인으로 다시 활성화되지 않습니다.
+앱 서버는 service role key를 사용하지 않습니다. Supabase의 공개 가입 허용 여부와 OAuth 설정은 운영자가 별도로 관리합니다.
+참고: [Supabase SSR](https://supabase.com/docs/guides/auth/server-side/nextjs),
+[Google OAuth 설정](https://supabase.com/docs/guides/auth/social-login/auth-google).
 
 ### DB 접근 정책 검증
 
@@ -104,6 +123,7 @@ GitHub의 **Supabase RLS** 검사는 격리된 테스트 DB에 마이그레이�
 npx supabase start
 npx supabase test db
 npx supabase db lint --local --schema public --fail-on error
+AUTH_E2E=1 npm run test:e2e
 npx supabase stop
 ```
 
@@ -111,6 +131,19 @@ npx supabase stop
 개인 데이터 테이블의 소유자 CRUD, 타인·비로그인 접근 거부, 소유권 이전과 교차 사용자 연결 차단,
 허용 목록 보호, 태그·저장 키 중복 거부, 비공개 Storage 정책을 검증합니다.
 첨부 파일 업로드 UI·실제 파일 정리·크기/MIME 제한은 후속 작업 #8에서 구현합니다.
+
+`google_access.sql`은 초대·활성화·거부·비활성화·허용 목록 삭제와 DB 직접 접근 차단을 검사합니다.
+인증 E2E는 로컬 Supabase의 합성 사용자와 Google identity fixture로 비로그인·허용·거부·세션 만료·갱신·로그아웃을 검증합니다.
+Google 계정 선택 화면과 실제 Google 콜백은 이 자동화에 포함되지 않으며 OAuth 설정 후 직접 확인해야 합니다.
+테스트는 전용 포트 `3104`에서 앱을 시작하며, 로컬 Supabase 주소만 허용하고 fixture를 정리합니다.
+Docker는 이 격리된 로컬/CI 검증에만 필요하며 Next.js 앱 실행이나 배포에는 필요하지 않습니다.
+macOS에서 Docker가 Desktop 테스트 폴더를 읽지 못하면 SQL 테스트만 임시 폴더로 복사해 실행할 수 있습니다.
+
+```bash
+mkdir -p /tmp/chagok-auth-tests
+cp supabase/tests/*.sql /tmp/chagok-auth-tests/
+npx supabase test db /tmp/chagok-auth-tests
+```
 
 ## 개발 흐름
 
@@ -136,7 +169,7 @@ npx supabase stop
 
 ### 지금 — 무료 MVP
 
-- [ ] 모바일 우선 앱 셸과 Google 로그인
+- [x] 모바일 우선 기본 앱 셸과 Google 로그인 구현 (실제 OAuth 실측은 설정 후 진행)
 - [ ] 사용자별 RLS와 비공개 Storage
 - [ ] 직접 작성·텍스트 붙여넣기·링크 메타데이터
 - [ ] 보관함·검색·태그·즐겨찾기

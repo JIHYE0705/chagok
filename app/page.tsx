@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -6,7 +7,7 @@ export default function Home() {
       <div className="welcome-card">
         <header className="welcome-header">
           <p className="wordmark">나의 작은 정보 보관함</p>
-          <span className="status-badge">준비 중</span>
+          <Link className="status-badge" href="/login">로그인</Link>
         </header>
 
         <section className="welcome-hero" aria-labelledby="welcome-title">
