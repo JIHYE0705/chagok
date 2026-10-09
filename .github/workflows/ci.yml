@@ -38,3 +38,27 @@ jobs:
             echo "docs directory is empty"
             exit 1
           }
+
+  schema-check:
+    name: Supabase RLS
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - name: Start disposable Supabase database
+        run: npx supabase start
+      - name: Test schema and user isolation
+        run: npx supabase test db
+      - name: Lint database functions
+        run: npx supabase db lint --local --schema public --fail-on error
+      - name: Check generated database row contracts
+        run: |
+          npx supabase gen types typescript --local --schema public > "$RUNNER_TEMP/database.types.ts"
+          diff -u lib/data/types.ts "$RUNNER_TEMP/database.types.ts"
+      - run: npm run typecheck
+      - run: npm test -- --run
