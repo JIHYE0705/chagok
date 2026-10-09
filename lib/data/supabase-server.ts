@@ -1,6 +1,7 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import type { Database } from "./types";
 
 export async function createServerSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -9,14 +10,14 @@ export async function createServerSupabaseClient() {
     throw new Error("Supabase URL and publishable key are required.");
   }
   const cookieStore = await cookies();
-  return createServerClient(url, key, {
+  return createServerClient<Database>(url, key, {
     cookies: {
       getAll: () => cookieStore.getAll(),
       setAll: (values) => {
         try {
           values.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
         } catch {
-          // Server Components cannot set cookies; the auth proxy will refresh sessions in #4.
+          // shortcut: Server Components cannot set cookies, add the session refresh proxy in #4.
         }
       },
     },
