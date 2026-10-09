@@ -43,6 +43,6 @@ npx playwright install chromium
 3. 테스트를 먼저 작성하고 로컬에서 실측합니다.
 4. `lint`, `typecheck`, unit test, build를 확인합니다.
 5. PR을 올리고 CI 통과 후 `main`에 병합합니다.
-6. `main` 병합 후 Vercel이 배포합니다.
+6. Task 8에서 CI와 Vercel 자동 배포를 구성한 뒤, `main` 병합으로 production 배포를 시작합니다.
 
 제품 설계와 구현 계획은 [`docs/superpowers/specs/2026-10-09-chagok-free-first-design.md`](docs/superpowers/specs/2026-10-09-chagok-free-first-design.md)와 [`docs/superpowers/plans/2026-10-09-chagok-mvp-implementation.md`](docs/superpowers/plans/2026-10-09-chagok-mvp-implementation.md)에 있습니다.
