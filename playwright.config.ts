@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
-import { localSupabase } from "./tests/e2e/local-supabase";
+import { linkedSupabase } from "./tests/e2e/linked-supabase";
 
-const auth = process.env.AUTH_E2E === "1" ? localSupabase() : null;
+const auth = process.env.AUTH_E2E === "1" ? linkedSupabase() : null;
 
 export default defineConfig({
   testDir: "./tests/e2e",

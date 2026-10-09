@@ -113,37 +113,48 @@ RLS는 소유권과 Google 허용 목록·활성 프로필을 함께 검사합�
 참고: [Supabase SSR](https://supabase.com/docs/guides/auth/server-side/nextjs),
 [Google OAuth 설정](https://supabase.com/docs/guides/auth/social-login/auth-google).
 
-### DB 접근 정책 검증
+### 보관함
 
-GitHub의 **Supabase RLS** 검사는 격리된 테스트 DB에 마이그레이션을 적용하고 pgTAP 테스트와 DB lint를 실행합니다.
-실제 스키마로 생성한 `lib/data/types.ts`가 저장소와 일치하는지도 검사합니다.
-클라우드 프로젝트의 데이터나 인증키를 사용하지 않습니다. 직접 같은 검사를 실행하려면 Docker 엔진을 실행한 뒤:
+`/items`에서 항목 생성·조회·수정·삭제, 태그 관리, 검색과 즐겨찾기를 사용할 수 있습니다.
+항목은 최근 저장순으로 24개씩 표시됩니다. 검색은 제목·요약·본문·원문·메모·태그와 레시피 재료·조리 단계·세부 정보의 부분 문자열을 찾습니다.
+태그 이름은 공백과 대소문자 중복을 정리하며, 태그를 삭제하면 연결만 제거하고 항목 내용은 유지합니다.
+삭제는 확인 체크가 필요하며, 저장 오류가 나면 폼 입력을 유지합니다.
 
-```bash
-npx supabase start
-npx supabase test db
-npx supabase db lint --local --schema public --fail-on error
-AUTH_E2E=1 npm run test:e2e
-npx supabase stop
-```
+항목·본문·태그 연결 저장은 `save_item`의 한 트랜잭션으로 처리합니다.
+검색·태그 중복 처리·즐겨찾기 토글도 PostgreSQL에서 수행하며, 모든 함수는 기존 RLS를 따르는 `security invoker`입니다.
+공통 항목 수정은 원문과 별도 레시피 세부 정보를 유지합니다. 레시피 전용 편집·규칙 기반 정리는 #6, 첨부 파일 업로드·파일 정리는 #8 범위입니다.
 
-`supabase/tests/rls.sql`은 테스트 사용자·항목·파일 메타데이터를 트랜잭션 안에서 만들고 마지막에 롤백합니다.
-개인 데이터 테이블의 소유자 CRUD, 타인·비로그인 접근 거부, 소유권 이전과 교차 사용자 연결 차단,
-허용 목록 보호, 태그·저장 키 중복 거부, 비공개 Storage 정책을 검증합니다.
-첨부 파일 업로드 UI·실제 파일 정리·크기/MIME 제한은 후속 작업 #8에서 구현합니다.
+### 연결된 Supabase 검증
 
-`google_access.sql`은 초대·활성화·거부·비활성화·허용 목록 삭제와 DB 직접 접근 차단을 검사합니다.
-인증 E2E는 로컬 Supabase의 합성 사용자와 Google identity fixture로 비로그인·허용·거부·세션 만료·갱신·로그아웃을 검증합니다.
-Google 계정 선택 화면과 실제 Google 콜백은 이 자동화에 포함되지 않으며 OAuth 설정 후 직접 확인해야 합니다.
-테스트는 전용 포트 `3104`에서 앱을 시작하며, 로컬 Supabase 주소만 허용하고 fixture를 정리합니다.
-Docker는 이 격리된 로컬/CI 검증에만 필요하며 Next.js 앱 실행이나 배포에는 필요하지 않습니다.
-macOS에서 Docker가 Desktop 테스트 폴더를 읽지 못하면 SQL 테스트만 임시 폴더로 복사해 실행할 수 있습니다.
+DB 검사는 Docker 대신 연결된 Supabase 프로젝트에서 실행합니다. 먼저 Supabase CLI에 로그인하고 테스트용 프로젝트를 연결합니다.
+`SUPABASE_PROJECT_REF` 환경 변수를 지정하면 연결 파일 대신 해당 프로젝트를 사용합니다.
 
 ```bash
-mkdir -p /tmp/chagok-auth-tests
-cp supabase/tests/*.sql /tmp/chagok-auth-tests/
-npx supabase test db /tmp/chagok-auth-tests
+npm run test:db
+npm run typecheck
+npm test
+npm run lint
+npm run build
+AUTH_E2E=1 npm run test:e2e -- --workers=1
 ```
+
+`test:db`는 `supabase/tests/*.sql`의 pgTAP 결과를 모두 검사합니다.
+아직 적용되지 않은 마이그레이션도 테스트 트랜잭션 안에서만 적용하고, 테스트 사용자·항목·Storage 메타데이터와 함께 롤백합니다.
+기존 마이그레이션 이력과 스키마가 있어야 하며, 실제 데이터 테이블을 초기화하지 않습니다.
+`rls.sql`은 사용자 소유권·교차 사용자 연결·비로그인 차단·비공개 Storage 정책,
+`google_access.sql`은 초대·활성화·거부·허용 목록 삭제,
+`item_library.sql`은 CRUD·태그 중복·저장 롤백·검색·필터·페이지·즐겨찾기를 검증합니다.
+
+인증·보관함 E2E는 연결된 프로젝트의 실제 Auth 세션을 사용합니다.
+브라우저 검증 전에는 새 마이그레이션을 해당 프로젝트에 적용해야 합니다.
+CLI로 테스트 전용 관리자 키를 읽고 무작위 테스트 계정과 합성 Google identity를 만든 후, 종료 시 해당 계정·데이터·초대를 삭제합니다.
+관리자 키는 테스트 프로세스에서만 사용하며 앱 서버에 전달하지 않습니다.
+테스트 프로세스를 강제 종료하면 임시 계정이 남을 수 있으므로 실행 중인 테스트는 정상 종료해 주세요.
+Google 계정 선택 화면과 실제 Google OAuth 콜백은 이 자동화에 포함되지 않습니다.
+
+CI의 **App Checks**는 타입·단위 테스트·lint·빌드·공개 화면 E2E를 검사합니다.
+**Linked Supabase DB**는 저장소 Variable `SUPABASE_PROJECT_REF`와 Secret `SUPABASE_ACCESS_TOKEN`을 설정한 경우 연결된 프로젝트에서 DB 검사를 실행합니다.
+설정하지 않으면 해당 DB job은 생략됩니다. 원격 Auth 관리자 키를 쓰는 E2E는 수동으로 실행합니다.
 
 ## 개발 흐름
 
