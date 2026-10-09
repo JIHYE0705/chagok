@@ -1,0 +1,65 @@
+:root {
+  --milk: #fffdf7;
+  --ink: #302b27;
+  --muted: #77706b;
+  --yellow: #ffe27b;
+  --pink: #ffd8dc;
+  --blue: #d9edff;
+  --line: #e7dfd5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--milk);
+  color: var(--ink);
+  font-family: Arial, "Noto Sans KR", sans-serif;
+}
+
+.app-shell {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 24px;
+}
+
+.welcome-card {
+  width: min(100%, 460px);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgb(78 57 35 / 8%);
+  padding: 48px 32px;
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(3rem, 14vw, 5rem);
+  letter-spacing: -0.08em;
+}
+
+.welcome-copy {
+  margin: 20px 0 0;
+  color: var(--muted);
+}
+
+@media (min-width: 640px) {
+  .app-shell {
+    padding: 48px;
+  }
+}
