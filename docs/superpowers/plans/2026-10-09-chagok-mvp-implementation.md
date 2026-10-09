@@ -22,6 +22,8 @@
 - API 키·서비스 키·개인 원문은 클라이언트 번들, GitHub, 로그에 남기지 않는다.
 - 완료되지 않은 작업은 완료로 표시하지 않으며, 수집 실패·누락·충돌을 성공처럼 표시하지 않는다.
 - 정보 항목 중심의 공통 모델과 유형별 세부 모델을 사용하고 사용자 정의 태그의 다대다 연결을 지원한다.
+- 개발은 기능 브랜치에서 수행하고, 로컬 실측·검증을 마친 뒤 PR로 병합한다.
+- PR에서는 CI 검사를 통과해야 하며, `main` 병합 후 Vercel이 자동으로 배포한다.
 
 ## Review Focus
 
@@ -190,19 +192,21 @@ Each task below becomes one GitHub development issue before implementation.
 
 **Files:**
 - Create: `.env.example`, `vercel.json` only if a function setting is required
+- Create: `.github/workflows/ci.yml`
 - Create: `tests/e2e/deployed-smoke.spec.ts`
-- Modify: `README.md` with deployment checklist and rollback notes
+- Modify: `README.md` with local verification, PR, CI, and deployment checklist
 
 **Interfaces:**
 - Consumes: all previous tasks and their environment variable contracts.
-- Produces: a Vercel deployment linked to GitHub, a repeatable preview/production verification command, and documented secret names without secret values.
+- Produces: a GitHub PR CI workflow, a Vercel deployment linked to GitHub with production deploys from `main`, a repeatable preview/production verification command, and documented secret names without secret values.
 
 - [ ] **Step 1: Write deployed smoke tests for Google login, save/search/edit from mobile viewport, PC re-login, and signed-out access denial.
-- [ ] **Step 2: Run local production build and deployed smoke tests against a preview; confirm any failure before changing deployment configuration.
-- [ ] **Step 3: Configure Vercel Secret variables, Supabase OAuth callback URLs, redirect URLs, Storage policies, and the initial allowlist without committing credentials.
-- [ ] **Step 4: Deploy through the GitHub-connected Vercel project and record the deployment URL and environment checklist in `README.md`.
-- [ ] **Step 5: Run `npm run lint`, `npm run typecheck`, `npm test -- --run`, `npm run build`, and deployed smoke tests; verify logs contain no tokens or raw private content.
-- [ ] **Step 6: Commit with `🚀 feat: deploy and verify mobile cross-device MVP`.**
+- [ ] **Step 2: Run the local production build and manual mobile/desktop smoke pass; record the exact commands and expected results before changing deployment configuration.
+- [ ] **Step 3: Implement `.github/workflows/ci.yml` to run lint, typecheck, unit tests, and build for pull requests and pushes to `main`; fail closed when a check fails.
+- [ ] **Step 4: Configure Vercel Git integration so previews are created for PRs and production deploys happen only after changes land on `main`; configure Secret variables, Supabase OAuth callback URLs, redirect URLs, Storage policies, and the initial allowlist without committing credentials.
+- [ ] **Step 5: Run CI locally and against a preview, then execute deployed smoke tests for Google login, save/search/edit from a mobile viewport, PC re-login, and signed-out access denial.
+- [ ] **Step 6: Document the feature-branch → local verification → PR → CI → `main` merge → Vercel production flow and rollback notes in `README.md`.
+- [ ] **Step 7: Commit with `🚀 feat: add CI and main-merge deployment verification`.**
 
 ## Future Issue Candidates (not MVP)
 
