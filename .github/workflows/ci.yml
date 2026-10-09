@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  ci-check:
+    name: CI Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Check README.md
+        shell: bash
+        run: |
+          test -f README.md || {
+            echo "README.md is missing"
+            exit 1
+          }
+          test -s README.md || {
+            echo "README.md is empty"
+            exit 1
+          }
+
+      - name: Check docs directory
+        shell: bash
+        run: |
+          test -d docs || {
+            echo "docs directory is missing"
+            exit 1
+          }
+          find docs -type f -print -quit | grep -q . || {
+            echo "docs directory is empty"
+            exit 1
+          }
