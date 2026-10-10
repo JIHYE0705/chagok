@@ -70,6 +70,33 @@ export type Database = {
           },
         ]
       }
+      extraction_requests: {
+        Row: {
+          canonical_url: string
+          idempotency_key: string
+          lease_id: string
+          result: Json | null
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          canonical_url: string
+          idempotency_key: string
+          lease_id: string
+          result?: Json | null
+          started_at?: string
+          user_id?: string
+        }
+        Update: {
+          canonical_url?: string
+          idempotency_key?: string
+          lease_id?: string
+          result?: Json | null
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ingredients: {
         Row: {
           evidence_id: string | null
@@ -419,6 +446,7 @@ export type Database = {
           author: string | null
           collection_method: string
           created_at: string
+          extraction_key: string | null
           id: string
           item_id: string
           kind: string
@@ -430,6 +458,7 @@ export type Database = {
           author?: string | null
           collection_method: string
           created_at?: string
+          extraction_key?: string | null
           id?: string
           item_id: string
           kind: string
@@ -441,6 +470,7 @@ export type Database = {
           author?: string | null
           collection_method?: string
           created_at?: string
+          extraction_key?: string | null
           id?: string
           item_id?: string
           kind?: string
@@ -449,6 +479,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sources_extraction_request_fkey"
+            columns: ["user_id", "extraction_key"]
+            isOneToOne: false
+            referencedRelation: "extraction_requests"
+            referencedColumns: ["user_id", "idempotency_key"]
+          },
           {
             foreignKeyName: "sources_item_id_user_id_fkey"
             columns: ["item_id", "user_id"]

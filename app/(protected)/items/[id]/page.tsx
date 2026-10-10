@@ -62,7 +62,7 @@ export default async function Item({ params }: { params: Promise<{ id: string }>
         </section>
       )}
       {item.notes && <section><h2>메모</h2><p className="preserve-lines">{item.notes}</p></section>}
-      {item.sources.map((source) => <section key={source.id}><h2>출처</h2><p>{({ manual: "직접 작성", text: "텍스트 붙여넣기", link: "링크", attachment: "첨부 파일" })[source.kind as "manual" | "text" | "link" | "attachment"]}{source.author && ` · ${source.author}`}</p>{source.url && /^https?:\/\//i.test(source.url) && <a href={source.url} target="_blank" rel="noopener noreferrer">원본 링크 열기</a>}<EvidencePanel evidence={source.source_evidence.map((entry) => ({ ...entry, status: entry.status as keyof typeof evidenceLabels }))} /></section>)}
+      {item.sources.map((source) => <section key={source.id}><h2>출처</h2><p>{({ manual: "직접 작성", text: "텍스트 붙여넣기", link: "링크", attachment: "첨부 파일" })[source.kind as "manual" | "text" | "link" | "attachment"]}{source.author && ` · ${source.author}`}</p>{source.collection_method === "metadata" && <p className="muted">공개 제목·설명 메타데이터를 수집한 기록이에요. 레시피 본문 전체를 확인한 것은 아니에요.</p>}{source.url && /^https?:\/\//i.test(source.url) && <a href={source.url} target="_blank" rel="noopener noreferrer">원본 링크 열기</a>}<EvidencePanel evidence={source.source_evidence.map((entry) => ({ ...entry, status: entry.status as keyof typeof evidenceLabels }))} /></section>)}
       {item.item_contents[0]?.raw_text && <details className="evidence-panel"><summary>보존한 원문</summary><p className="preserve-lines">{item.item_contents[0].raw_text}</p></details>}
       <DeleteItem id={item.id} />
     </section>
