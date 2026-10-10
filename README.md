@@ -113,6 +113,9 @@ RLS는 소유권과 Google 허용 목록·활성 프로필을 함께 검사합�
 참고: [Supabase SSR](https://supabase.com/docs/guides/auth/server-side/nextjs),
 [Google OAuth 설정](https://supabase.com/docs/guides/auth/social-login/auth-google).
 
+2026-10-10 로컬 환경에서 사용자가 실제 Google 계정으로 로그인하고 보관함에 진입했다.
+확인한 결과와 남은 시나리오는 [Google OAuth 검증 기록](docs/verification/2026-10-10-google-oauth.md)에 정리했다.
+
 ### 보관함
 
 `/items`에서 항목 생성·조회·수정·삭제, 태그 관리, 검색과 즐겨찾기를 사용할 수 있습니다.
@@ -180,7 +183,7 @@ CI의 **App Checks**는 타입·단위 테스트·lint·빌드·공개 화면 E2
 
 ### 지금 — 무료 MVP
 
-- [x] 모바일 우선 기본 앱 셸과 Google 로그인 구현 (실제 OAuth 실측은 설정 후 진행)
+- [x] 모바일 우선 기본 앱 셸과 Google 로그인 구현 (로컬 실제 계정 로그인 확인, 남은 시나리오는 #4)
 - [ ] 사용자별 RLS와 비공개 Storage
 - [ ] 직접 작성·텍스트 붙여넣기·링크 메타데이터
 - [ ] 보관함·검색·태그·즐겨찾기
