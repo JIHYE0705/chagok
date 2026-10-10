@@ -6,20 +6,21 @@ import { requireAppUser } from "../../../lib/auth/session";
 import { createItem, updateItem, deleteItem, toggleFavorite, itemError } from "../../../lib/data/items";
 import { upsertTag, deleteTag } from "../../../lib/data/tags";
 import { parseItemForm } from "../../../lib/data/search";
+import { parseCaptureForm } from "../../../lib/normalizers/parse-source";
 
-export type ActionState = { error: string };
+export type ActionState = { error: string; saved?: string };
 
 export async function saveItemAction(id: string | null, _state: ActionState, form: FormData): Promise<ActionState> {
   await requireAppUser();
   let saved: string;
   try {
-    const input = parseItemForm(form);
+    const input = { ...parseItemForm(form), capture: parseCaptureForm(form) };
     saved = id ? await updateItem(id, input) : await createItem(input);
   } catch (error) {
     return { error: error instanceof Error ? error.message : itemError };
   }
   revalidatePath("/items", "layout");
-  redirect(`/items/${saved}`);
+  return { error: "", saved };
 }
 
 export async function favoriteAction(id: string): Promise<ActionState> {

@@ -49,6 +49,18 @@ test("save and favorite errors never claim success", async () => {
   expect(client.rpc).toHaveBeenCalledTimes(1);
 });
 
+test("capture uses one atomic RPC with server-generated source evidence", async () => {
+  client.rpc.mockResolvedValue({ data: "id", error: null });
+  await createItem({ title: "고구마", summary: "", body: "정리 내용", notes: "", tags: [], capture: {
+    kind: "text", url: "", author: "", sourceId: "", rawText: "고구마\n재료:\n고구마", ingredients: [{ name: "고구마", quantity: "" }], steps: [],
+    servings: "", prepTime: "", cookTime: "", temperature: "", tips: "",
+  } });
+  expect(client.rpc).toHaveBeenCalledWith("save_capture", expect.objectContaining({ p_body: "정리 내용", p_capture: expect.objectContaining({
+    rawText: "고구마\n재료:\n고구마", evidence: expect.arrayContaining([expect.objectContaining({ field: "예열", status: "missing" })]),
+  }) }));
+  expect(client.rpc).toHaveBeenCalledTimes(1);
+});
+
 test("malformed item IDs return missing without querying private rows", async () => {
   expect(await getItem("not-a-uuid")).toBeNull();
   expect(client.from).not.toHaveBeenCalled();

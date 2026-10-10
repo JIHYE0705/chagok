@@ -486,6 +486,18 @@ export type Database = {
     Functions: {
       authorize_current_user: { Args: never; Returns: boolean }
       has_app_access: { Args: never; Returns: boolean }
+      save_capture: {
+        Args: {
+          p_body: string
+          p_capture: Json
+          p_item_id?: string
+          p_notes: string
+          p_summary: string
+          p_tags: string[]
+          p_title: string
+        }
+        Returns: string
+      }
       save_item: {
         Args: {
           p_body: string

@@ -2,8 +2,9 @@ import "server-only";
 import { requireAppUser } from "../auth/session";
 import { createServerSupabaseClient } from "./supabase-server";
 import { isItemId, validateItem, type ItemInput, type Filters } from "./search";
+import { normalizeItem } from "../normalizers/normalize-item";
 
-const selection = "*, item_contents(body), item_tags(tags(id, name)), recipe_details(*, ingredients(*), recipe_steps(*))" as const;
+const selection = "*, item_contents(body, raw_text), sources(*, source_evidence(*)), item_tags(tags(id, name)), recipe_details(*, ingredients(*), recipe_steps(*))" as const;
 export const itemError = "처리하지 못했어요. 입력은 그대로 두고 잠시 후 다시 시도해 주세요.";
 
 export async function listItems(filters: Filters) {
@@ -34,7 +35,10 @@ async function saveItem(id: string | null, input: ItemInput) {
   const validated = validateItem(input);
   if (id !== null && !isItemId(id)) throw new Error("항목을 찾을 수 없어요.");
   const client = await createServerSupabaseClient();
-  const { data, error } = await client.rpc("save_item", { p_item_id: id ?? undefined, p_title: validated.title, p_summary: validated.summary, p_body: validated.body, p_notes: validated.notes, p_tags: validated.tags });
+  const args = { p_item_id: id ?? undefined, p_title: validated.title, p_summary: validated.summary, p_body: validated.body, p_notes: validated.notes, p_tags: validated.tags };
+  const { data, error } = validated.capture
+    ? await client.rpc("save_capture", { ...args, p_capture: { ...validated.capture, evidence: normalizeItem(validated.capture.rawText, validated.capture.kind).evidence } })
+    : await client.rpc("save_item", args);
   if (error || !data) throw new Error(itemError);
   return data;
 }

@@ -1,4 +1,6 @@
-export type ItemInput = { title: string; summary: string; body: string; notes: string; tags: string[] };
+import type { CaptureInput } from "../normalizers/normalize-item";
+
+export type ItemInput = { title: string; summary: string; body: string; notes: string; tags: string[]; capture?: CaptureInput };
 export type Filters = { q: string; tag: string; favorite: boolean; page: number };
 export const isItemId = (value: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
