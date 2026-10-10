@@ -53,3 +53,15 @@ test("capture boundary rejects unsafe URLs and oversized fields", () => {
   form.set("rawText", "가".repeat(50001));
   expect(() => parseCaptureForm(form)).toThrow("원문");
 });
+test("capture canonicalizes supported links and accepts extraction keys only for valid link captures", () => {
+  const form = new FormData();
+  form.set("capture", "yes"); form.set("kind", "link"); form.set("sourceUrl", "https://youtu.be/jNQXAC9IVRw?si=tracking");
+  form.set("extractionKey", "10000000-0000-4000-8000-000000000001");
+  expect(parseCaptureForm(form)).toMatchObject({ url: "https://www.youtube.com/watch?v=jNQXAC9IVRw", extractionKey: "10000000-0000-4000-8000-000000000001" });
+  form.set("kind", "text");
+  expect(() => parseCaptureForm(form)).toThrow("링크 수집");
+  form.set("kind", "link"); form.set("sourceUrl", "https://example.com/recipe");
+  expect(() => parseCaptureForm(form)).toThrow("링크 수집");
+  form.set("extractionKey", "");
+  expect(parseCaptureForm(form)).toMatchObject({ url: "https://example.com/recipe" });
+});

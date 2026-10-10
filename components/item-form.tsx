@@ -7,6 +7,7 @@ import { saveItemAction, type ActionState } from "../app/(protected)/items/actio
 import type { ItemInput } from "../lib/data/search";
 import { normalizeItem, recipeFields, type CaptureKind } from "../lib/normalizers/normalize-item";
 import { EvidencePanel } from "./evidence-panel";
+import { LinkCapture } from "./link-capture";
 
 type Props = { ownerId: string; id?: string | null; initial?: ItemInput };
 const subscribe = () => () => {};
@@ -22,6 +23,7 @@ function Editor({ ownerId, id = null, initial }: Props) {
   const defaults = {
     title: initial?.title ?? "", summary: initial?.summary ?? "", body: initial?.body ?? "", notes: initial?.notes ?? "", tags: initial?.tags.join(", ") ?? "",
     kind: capture?.kind ?? "manual", sourceUrl: capture?.url ?? "", author: capture?.author ?? "", rawText: capture?.rawText ?? "",
+    extractionKey: capture?.extractionKey ?? "", linkRequestKey: "",
     ingredients: capture?.ingredients.map((entry) => [entry.name, entry.quantity].join(" | ")).join("\n") ?? "",
     steps: capture?.steps.map((entry) => [entry.instruction, entry.time, entry.temperature].join(" | ")).join("\n") ?? "",
     servings: capture?.servings ?? "", prepTime: capture?.prepTime ?? "", cookTime: capture?.cookTime ?? "", temperature: capture?.temperature ?? "", tips: capture?.tips ?? "",
@@ -31,8 +33,8 @@ function Editor({ ownerId, id = null, initial }: Props) {
     try {
       const stored = sessionStorage.getItem(draftKey);
       const restored = stored ? JSON.parse(stored) : null;
-      if (restored && Object.keys(defaults).every((key) => typeof restored[key] === "string") && ["manual", "text", "link"].includes(restored.kind)) {
-        return { fields: Object.fromEntries(Object.keys(defaults).map((key) => [key, restored[key]])) as typeof defaults, dirty: true, warning: "이 탭에서 작성하던 입력을 복구했어요." };
+      if (restored && Object.keys(restored).every((key) => Object.hasOwn(defaults, key) && typeof restored[key] === "string") && ["manual", "text", "link"].includes(restored.kind)) {
+        return { fields: { ...defaults, ...restored } as typeof defaults, dirty: true, warning: "이 탭에서 작성하던 입력을 복구했어요." };
       }
       return { fields: defaults, dirty: false, warning: "" };
     } catch { return { fields: defaults, dirty: false, warning: "이 브라우저에서는 입력 복구를 사용할 수 없어요. 화면을 닫기 전에 저장해 주세요." }; }
@@ -65,7 +67,8 @@ function Editor({ ownerId, id = null, initial }: Props) {
     catch { nextWarning = "입력을 임시 보관하지 못했어요. 화면을 닫기 전에 저장해 주세요."; }
     setEditor({ fields: next, dirty: true, warning: nextWarning });
   };
-  const change = (name: keyof typeof fields, value: string) => update({ ...fields, [name]: value });
+  const change = (name: keyof typeof fields, value: string) => update({ ...fields, [name]: value,
+    ...(name === "sourceUrl" ? { extractionKey: "", linkRequestKey: "" } : name === "rawText" || name === "kind" ? { extractionKey: "" } : {}) });
   const draft = normalizeItem(fields.rawText, fields.kind as CaptureKind);
   const normalize = () => {
     if ((fields.title || fields.body || fields.ingredients || fields.steps) && !window.confirm("작성한 정리 내용을 원문 후보로 바꿀까요? 원문은 그대로 남아요.")) return;
@@ -73,11 +76,14 @@ function Editor({ ownerId, id = null, initial }: Props) {
   };
   return (
     <form action={action} className="item-form">
-      <input type="hidden" name="capture" value="yes" /><input type="hidden" name="sourceId" value={capture?.sourceId ?? ""} />
+      <input type="hidden" name="capture" value="yes" /><input type="hidden" name="sourceId" value={capture?.sourceId ?? ""} /><input type="hidden" name="extractionKey" value={fields.extractionKey} />
       <fieldset disabled={pending || Boolean(state.saved)}>
-        <div className="item-field"><label htmlFor="capture-kind">입력 방식</label><select id="capture-kind" name="kind" value={fields.kind} onChange={(e) => change("kind", e.target.value)}><option value="manual">직접 작성</option><option value="text">텍스트 붙여넣기</option><option value="link">링크 입력</option></select></div>
+        <div className="item-field"><label htmlFor="capture-kind">입력 방식</label><select id="capture-kind" name="kind" value={fields.kind} onChange={(e) => change("kind", e.target.value)}><option value="manual">직접 작성</option><option value="text">텍스트 붙여넣기</option><option value="link">링크 가져오기</option></select></div>
         <div className="item-field"><label htmlFor="source-url">원본 링크</label><input id="source-url" name="sourceUrl" type="url" value={fields.sourceUrl} onChange={(e) => change("sourceUrl", e.target.value)} maxLength={2000} required={fields.kind === "link"} /></div>
-        {fields.kind === "link" && <p className="muted">링크 자동 수집은 아직 제공하지 않아요. 아래에 캡션이나 원문을 붙여넣어 주세요. 원문이 없으면 추출 실패로 표시합니다.</p>}
+        {fields.kind === "link" && <LinkCapture key={fields.sourceUrl} url={fields.sourceUrl} requestKey={fields.linkRequestKey} onRequestKey={(key) => change("linkRequestKey", key)} onApply={(result, key) => {
+          if ((fields.title || fields.rawText || fields.body) && !window.confirm("작성한 제목·본문·원문을 수집한 메타데이터로 바꿀까요?")) return;
+          update({ ...fields, sourceUrl: result.canonicalUrl, title: result.title ?? "", body: result.description ?? "", rawText: [result.title, result.description].filter(Boolean).join("\n"), author: result.author || fields.author, extractionKey: key, linkRequestKey: key });
+        }} />}
         <div className="item-field"><label htmlFor="source-author">출처 작성자</label><input id="source-author" name="author" value={fields.author} onChange={(e) => change("author", e.target.value)} maxLength={200} /></div>
         <div className="item-field"><label htmlFor="raw-text">원문</label><textarea id="raw-text" name="rawText" value={fields.rawText} onChange={(e) => change("rawText", e.target.value)} rows={8} maxLength={50000} /></div>
         <button type="button" className="soft-button" onClick={normalize} disabled={!fields.rawText.trim()}>원문에서 후보 정리</button>

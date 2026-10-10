@@ -1,5 +1,6 @@
 import { isItemId } from "../data/search";
 import type { CaptureInput } from "./normalize-item";
+import { validateSourceUrl } from "../extractors/url-policy";
 
 export function parseCaptureForm(form: FormData): CaptureInput | undefined {
   if (form.get("capture") !== "yes") return undefined;
@@ -11,13 +12,16 @@ export function parseCaptureForm(form: FormData): CaptureInput | undefined {
   };
   const kind = field("kind");
   if (kind !== "manual" && kind !== "text" && kind !== "link") throw new Error("출처 유형을 선택해 주세요.");
-  const url = field("sourceUrl", 2000).trim();
+  let url = field("sourceUrl", 2000).trim();
   if (kind === "link" && !url) throw new Error("원본 링크를 적어 주세요.");
   if (url) {
     let parsed: URL;
     try { parsed = new URL(url); } catch { throw new Error("올바른 HTTP 또는 HTTPS 링크를 적어 주세요."); }
     if (!["https:", "http:"].includes(parsed.protocol) || parsed.username || parsed.password) throw new Error("올바른 HTTP 또는 HTTPS 링크를 적어 주세요.");
   }
+  const extractionKey = field("extractionKey");
+  if (extractionKey && (!isItemId(extractionKey) || kind !== "link")) throw new Error("링크 수집을 다시 확인해 주세요.");
+  if (kind === "link") { try { url = validateSourceUrl(url).url; } catch { if (extractionKey) throw new Error("링크 수집을 다시 확인해 주세요."); } }
   const sourceId = field("sourceId");
   if (sourceId && !isItemId(sourceId)) throw new Error("출처를 찾을 수 없어요.");
   const lines = (name: string) => field(name, 50000).split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
@@ -32,6 +36,6 @@ export function parseCaptureForm(form: FormData): CaptureInput | undefined {
     return { instruction: parts[0], time: parts[1] ?? "", temperature: parts[2] ?? "" };
   });
   if (ingredients.length > 100 || steps.length > 100) throw new Error("재료와 단계는 각각 100개까지 적어 주세요.");
-  return { kind, url, sourceId, author: field("author", 200).trim(), rawText: field("rawText", 50000), ingredients, steps,
+  return { kind, url, sourceId, ...(extractionKey ? { extractionKey } : {}), author: field("author", 200).trim(), rawText: field("rawText", 50000), ingredients, steps,
     servings: field("servings"), prepTime: field("prepTime"), cookTime: field("cookTime"), temperature: field("temperature"), tips: field("tips", 10000) };
 }

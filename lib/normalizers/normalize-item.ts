@@ -2,6 +2,7 @@ export type CaptureKind = "manual" | "text" | "link";
 export type Evidence = { field: string; excerpt: string | null; location: string | null; status: "missing" | "failed" | "needs_review" | "conflicting" };
 export type CaptureInput = {
   kind: CaptureKind; url: string; author: string; sourceId: string; rawText: string;
+  extractionKey?: string;
   ingredients: { name: string; quantity: string }[]; steps: { instruction: string; time: string; temperature: string }[];
   servings: string; prepTime: string; cookTime: string; temperature: string; tips: string;
 };
