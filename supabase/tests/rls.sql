@@ -87,6 +87,9 @@ begin
   execute format('select to_jsonb(t) from public.%I t limit 1', table_name) into payload;
   -- Roll back the owner mutation so cascades cannot remove another table's fixture.
   begin
+    if table_name in ('items', 'attachments') then
+      delete from storage.objects where bucket_id = 'attachments' and (storage.foldername(name))[1] = auth.uid()::text;
+    end if;
     execute format('delete from public.%I', table_name);
     get diagnostics deleted_count = row_count;
     execute format('insert into public.%1$I select * from jsonb_populate_record(null::public.%1$I, %2$L::jsonb)', table_name, payload);
@@ -133,7 +136,7 @@ select throws_ok($$update public.sources set item_id = '10000000-0000-0000-0000-
   '23503', null, 'cannot attach own source to another user item');
 select throws_ok($$update public.attachments set item_id = '10000000-0000-0000-0000-000000000002',
   storage_path = user_id::text || '/10000000-0000-0000-0000-000000000002/fixture.png'$$,
-  '23503', null, 'cannot attach own metadata to another user item');
+  '42501', null, 'cannot attach own metadata to another user item');
 select throws_ok($$update public.processing_jobs set item_id = '10000000-0000-0000-0000-000000000002'$$,
   '23503', null, 'cannot attach own job to another user item');
 select throws_ok($$update public.recipe_details set item_id = '10000000-0000-0000-0000-000000000003'$$,
@@ -152,7 +155,8 @@ select throws_ok($$insert into public.processing_jobs (item_id, kind, idempotenc
   '23505', null, 'duplicate save key rejected');
 
 select is((select count(*) from storage.objects where bucket_id = 'attachments'), 1::bigint, 'owner reads own storage object');
-select lives_ok($$insert into storage.objects (bucket_id, name)
+select lives_ok($$insert into public.attachments (item_id, storage_path, mime_type, size_bytes) values ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001/10000000-0000-0000-0000-000000000001/new.png', 'image/png', 100);
+insert into storage.objects (bucket_id, name)
   values ('attachments', '00000000-0000-0000-0000-000000000001/10000000-0000-0000-0000-000000000001/new.png')$$,
   'owner uploads to own item');
 select throws_ok($$insert into storage.objects (bucket_id, name)
@@ -167,7 +171,7 @@ select results_eq($$with changed as (update storage.objects set metadata = '{}' 
   array[0::bigint], 'other storage update denied');
 select results_eq($$with changed as (delete from storage.objects where name like '00000000-0000-0000-0000-000000000002/%' returning 1) select count(*) from changed$$,
   array[0::bigint], 'other storage delete denied');
-select lives_ok($$update storage.objects set metadata = '{}' where name like '00000000-0000-0000-0000-000000000001/%'$$, 'owner storage update allowed');
+select lives_ok($$update storage.objects set metadata = null where name like '00000000-0000-0000-0000-000000000001/%'$$, 'owner storage update allowed');
 select lives_ok($$delete from storage.objects where name like '00000000-0000-0000-0000-000000000001/%'$$, 'owner storage delete allowed');
 
 reset role;

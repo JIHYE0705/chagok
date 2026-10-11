@@ -1,4 +1,6 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
+import { deleteItemAttachments } from "./attachments";
 import { requireAppUser } from "../auth/session";
 import { createServerSupabaseClient } from "./supabase-server";
 import { isItemId, validateItem, type ItemInput, type Filters } from "./search";
@@ -30,25 +32,27 @@ export async function getItem(id: string) {
 }
 export type ItemDetail = NonNullable<Awaited<ReturnType<typeof getItem>>>;
 
-async function saveItem(id: string | null, input: ItemInput) {
+async function saveItem(id: string | null, input: ItemInput, requestKey: string) {
   await requireAppUser();
   const validated = validateItem(input);
   if (id !== null && !isItemId(id)) throw new Error("항목을 찾을 수 없어요.");
+  if (!isItemId(requestKey)) throw new Error("저장 요청을 확인해 주세요.");
   const client = await createServerSupabaseClient();
-  const args = { p_item_id: id ?? undefined, p_title: validated.title, p_summary: validated.summary, p_body: validated.body, p_notes: validated.notes, p_tags: validated.tags };
-  const { data, error } = validated.capture
-    ? await client.rpc("save_capture", { ...args, p_capture: { ...validated.capture, evidence: normalizeItem(validated.capture.rawText, validated.capture.kind).evidence } })
-    : await client.rpc("save_item", args);
+  const { data, error } = await client.rpc("save_item_once", { p_key: requestKey, p_item_id: id ?? undefined, p_input: {
+    ...validated, ...(validated.capture ? { capture: { ...validated.capture, evidence: normalizeItem(validated.capture.rawText, validated.capture.kind).evidence } } : {}),
+  } });
+  if (error?.code === "22023" && error.message === "Save key conflict") throw new Error("저장 요청과 내용이 달라요. 보관함에서 먼저 저장 결과를 확인해 주세요.");
   if (error || !data) throw new Error(itemError);
   return data;
 }
-export async function createItem(input: ItemInput) { return saveItem(null, input); }
-export async function updateItem(id: string, input: ItemInput) { return saveItem(id, input); }
+export async function createItem(input: ItemInput, requestKey: string = randomUUID()) { return saveItem(null, input, requestKey); }
+export async function updateItem(id: string, input: ItemInput, requestKey: string = randomUUID()) { return saveItem(id, input, requestKey); }
 
 export async function deleteItem(id: string) {
   const user = await requireAppUser();
   if (!isItemId(id)) throw new Error("항목을 찾을 수 없어요.");
   const client = await createServerSupabaseClient();
+  await deleteItemAttachments(id);
   const { data, error } = await client.from("items").delete().eq("user_id", user.id).eq("id", id).select("id");
   if (error || !data?.length) throw new Error(itemError);
 }

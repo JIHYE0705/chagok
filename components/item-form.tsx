@@ -23,7 +23,7 @@ function Editor({ ownerId, id = null, initial }: Props) {
   const defaults = {
     title: initial?.title ?? "", summary: initial?.summary ?? "", body: initial?.body ?? "", notes: initial?.notes ?? "", tags: initial?.tags.join(", ") ?? "",
     kind: capture?.kind ?? "manual", sourceUrl: capture?.url ?? "", author: capture?.author ?? "", rawText: capture?.rawText ?? "",
-    extractionKey: capture?.extractionKey ?? "", linkRequestKey: "",
+    saveKey: crypto.randomUUID(), extractionKey: capture?.extractionKey ?? "", linkRequestKey: "",
     ingredients: capture?.ingredients.map((entry) => [entry.name, entry.quantity].join(" | ")).join("\n") ?? "",
     steps: capture?.steps.map((entry) => [entry.instruction, entry.time, entry.temperature].join(" | ")).join("\n") ?? "",
     servings: capture?.servings ?? "", prepTime: capture?.prepTime ?? "", cookTime: capture?.cookTime ?? "", temperature: capture?.temperature ?? "", tips: capture?.tips ?? "",
@@ -76,7 +76,7 @@ function Editor({ ownerId, id = null, initial }: Props) {
   };
   return (
     <form action={action} className="item-form">
-      <input type="hidden" name="capture" value="yes" /><input type="hidden" name="sourceId" value={capture?.sourceId ?? ""} /><input type="hidden" name="extractionKey" value={fields.extractionKey} />
+      <input type="hidden" name="saveKey" value={fields.saveKey} /><input type="hidden" name="capture" value="yes" /><input type="hidden" name="sourceId" value={capture?.sourceId ?? ""} /><input type="hidden" name="extractionKey" value={fields.extractionKey} />
       <fieldset disabled={pending || Boolean(state.saved)}>
         <div className="item-field"><label htmlFor="capture-kind">입력 방식</label><select id="capture-kind" name="kind" value={fields.kind} onChange={(e) => change("kind", e.target.value)}><option value="manual">직접 작성</option><option value="text">텍스트 붙여넣기</option><option value="link">링크 가져오기</option></select></div>
         <div className="item-field"><label htmlFor="source-url">원본 링크</label><input id="source-url" name="sourceUrl" type="url" value={fields.sourceUrl} onChange={(e) => change("sourceUrl", e.target.value)} maxLength={2000} required={fields.kind === "link"} /></div>

@@ -32,6 +32,7 @@ export type Database = {
       attachments: {
         Row: {
           created_at: string
+          file_name: string
           id: string
           item_id: string
           mime_type: string
@@ -42,6 +43,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          file_name?: string
           id?: string
           item_id: string
           mime_type: string
@@ -52,6 +54,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          file_name?: string
           id?: string
           item_id?: string
           mime_type?: string
@@ -171,6 +174,35 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "items"
             referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      item_save_requests: {
+        Row: {
+          input_hash: string
+          item_id: string | null
+          request_key: string
+          user_id: string
+        }
+        Insert: {
+          input_hash: string
+          item_id?: string | null
+          request_key: string
+          user_id?: string
+        }
+        Update: {
+          input_hash?: string
+          item_id?: string | null
+          request_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_save_requests_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -523,6 +555,32 @@ export type Database = {
     Functions: {
       authorize_current_user: { Args: never; Returns: boolean }
       has_app_access: { Args: never; Returns: boolean }
+      reserve_attachment: {
+        Args: {
+          p_item_id: string
+          p_key: string
+          p_mime: string
+          p_name: string
+          p_size: number
+        }
+        Returns: {
+          created_at: string
+          file_name: string
+          id: string
+          item_id: string
+          mime_type: string
+          size_bytes: number
+          status: string
+          storage_path: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "attachments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       save_capture: {
         Args: {
           p_body: string
@@ -544,6 +602,10 @@ export type Database = {
           p_tags: string[]
           p_title: string
         }
+        Returns: string
+      }
+      save_item_once: {
+        Args: { p_input: Json; p_item_id?: string; p_key: string }
         Returns: string
       }
       search_items: {

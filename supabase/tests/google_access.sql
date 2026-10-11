@@ -19,9 +19,18 @@ insert into public.profiles (id, status) values
 insert into public.items (id, user_id, title) values
   ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000011', 'invited fixture'),
   ('10000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000012', 'outsider fixture');
+insert into public.profiles (id, status) values
+  ('00000000-0000-0000-0000-000000000011', 'active'), ('00000000-0000-0000-0000-000000000012', 'active');
+insert into public.access_allowlist (google_subject) values ('outsider-google');
+insert into public.attachments (item_id, user_id, storage_path, mime_type, size_bytes)
+  select id, user_id, user_id::text || '/' || id::text || '/fixture.png', 'image/png', 100 from public.items
+  where id in ('10000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000012');
 insert into storage.objects (bucket_id, name) values
   ('attachments', '00000000-0000-0000-0000-000000000011/10000000-0000-0000-0000-000000000011/fixture.png'),
   ('attachments', '00000000-0000-0000-0000-000000000012/10000000-0000-0000-0000-000000000012/fixture.png');
+
+delete from public.access_allowlist where google_subject = 'outsider-google';
+update public.profiles set status = 'pending' where id = '00000000-0000-0000-0000-000000000011';
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000011', true);

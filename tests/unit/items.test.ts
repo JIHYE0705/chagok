@@ -34,10 +34,10 @@ test("create and update authenticate before using one atomic RPC", async () => {
   const input = { title: "제목", body: "본문", summary: "", notes: "", tags: ["간식"] };
   client.rpc.mockResolvedValue({ data: "id", error: null });
   expect(await createItem(input)).toBe("id");
-  expect(client.rpc).toHaveBeenCalledWith("save_item", { p_item_id: undefined, p_title: "제목", p_summary: "", p_body: "본문", p_notes: "", p_tags: ["간식"] });
+  expect(client.rpc).toHaveBeenCalledWith("save_item_once", { p_key: expect.any(String), p_item_id: undefined, p_input: input });
   const id = "10000000-0000-0000-0000-000000000001";
   await updateItem(id, input);
-  expect(client.rpc).toHaveBeenLastCalledWith("save_item", expect.objectContaining({ p_item_id: id }));
+  expect(client.rpc).toHaveBeenLastCalledWith("save_item_once", expect.objectContaining({ p_item_id: id }));
   expect(user).toHaveBeenCalledTimes(2);
 });
 
@@ -55,13 +55,23 @@ test("capture uses one atomic RPC with server-generated source evidence", async 
     kind: "text", url: "", author: "", sourceId: "", rawText: "고구마\n재료:\n고구마", ingredients: [{ name: "고구마", quantity: "" }], steps: [],
     servings: "", prepTime: "", cookTime: "", temperature: "", tips: "",
   } });
-  expect(client.rpc).toHaveBeenCalledWith("save_capture", expect.objectContaining({ p_body: "정리 내용", p_capture: expect.objectContaining({
+  expect(client.rpc).toHaveBeenCalledWith("save_item_once", expect.objectContaining({ p_input: expect.objectContaining({ body: "정리 내용", capture: expect.objectContaining({
     rawText: "고구마\n재료:\n고구마", evidence: expect.arrayContaining([expect.objectContaining({ field: "예열", status: "missing" })]),
-  }) }));
+  }) }) }));
   expect(client.rpc).toHaveBeenCalledTimes(1);
 });
 
 test("malformed item IDs return missing without querying private rows", async () => {
   expect(await getItem("not-a-uuid")).toBeNull();
   expect(client.from).not.toHaveBeenCalled();
+});
+
+test("UI saves use a stable request key with one atomic RPC", async () => {
+  client.rpc.mockResolvedValue({ data: "saved", error: null });
+  const key = "10000000-0000-0000-0000-000000000001";
+  const input = { title: "제목", body: "본문", summary: "", notes: "", tags: [] };
+  expect(await createItem(input, key)).toBe("saved");
+  expect(client.rpc).toHaveBeenCalledWith("save_item_once", { p_key: key, p_item_id: undefined, p_input: input });
+  client.rpc.mockResolvedValue({ data: null, error: { code: "22023", message: "Save key conflict" } });
+  await expect(createItem(input, key)).rejects.toThrow("보관함에서 먼저 저장 결과");
 });
