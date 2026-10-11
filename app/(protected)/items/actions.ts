@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { requireAppUser } from "../../../lib/auth/session";
 import { createItem, updateItem, deleteItem, toggleFavorite, itemError } from "../../../lib/data/items";
 import { upsertTag, deleteTag } from "../../../lib/data/tags";
-import { parseItemForm } from "../../../lib/data/search";
+import { isItemId, parseItemForm } from "../../../lib/data/search";
 import { parseCaptureForm } from "../../../lib/normalizers/parse-source";
 
 export type ActionState = { error: string; saved?: string };
@@ -15,7 +15,9 @@ export async function saveItemAction(id: string | null, _state: ActionState, for
   let saved: string;
   try {
     const input = { ...parseItemForm(form), capture: parseCaptureForm(form) };
-    saved = id ? await updateItem(id, input) : await createItem(input);
+    const key = form.get("saveKey");
+    if (typeof key !== "string" || !isItemId(key)) throw new Error("저장 요청을 확인해 주세요.");
+    saved = id ? await updateItem(id, input, key) : await createItem(input, key);
   } catch (error) {
     return { error: error instanceof Error ? error.message : itemError };
   }
@@ -33,7 +35,7 @@ export async function favoriteAction(id: string): Promise<ActionState> {
 export async function deleteItemAction(id: string, _state: ActionState, form: FormData): Promise<ActionState> {
   await requireAppUser();
   if (form.get("confirm") !== "yes") return { error: "삭제 확인에 체크해 주세요." };
-  try { await deleteItem(id); } catch { return { error: itemError }; }
+  try { await deleteItem(id); } catch (error) { return { error: error instanceof Error ? error.message : itemError }; }
   revalidatePath("/items", "layout");
   redirect("/items");
 }

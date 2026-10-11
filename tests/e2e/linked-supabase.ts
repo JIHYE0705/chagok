@@ -71,6 +71,14 @@ export function supabaseFixtures() {
     const status = linkedSupabase();
     const admin = createClient(status.API_URL, status.SERVICE_ROLE_KEY, { auth: { persistSession: false } });
     for (const id of users) {
+      const attachments = await admin.from("attachments").select("storage_path").eq("user_id", id);
+      if (attachments.error) throw new Error("Could not list linked fixture files.");
+      if (attachments.data.length) {
+        const removed = await admin.storage.from("attachments").remove(attachments.data.map((a) => a.storage_path));
+        if (removed.error) throw new Error("Could not clean linked fixture files.");
+        const metadata = await admin.from("attachments").delete().eq("user_id", id);
+        if (metadata.error) throw new Error("Could not clean linked attachment metadata.");
+      }
       const { error } = await admin.auth.admin.deleteUser(id);
       if (error) throw new Error("Could not clean linked user fixture.");
     }
