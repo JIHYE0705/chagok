@@ -24,6 +24,16 @@ export function validateSourceUrl(value: string) {
   return { platform: "youtube" as const, url: `https://www.youtube.com/watch?v=${video}` };
 }
 
+export function validateThumbnailUrl(value: string) {
+  if (typeof value !== "string" || value.length > 2000 || /[\u0000-\u0020\u007f\\]/.test(value)) throw new ExtractionError("invalid_url");
+  let url: URL;
+  try { url = new URL(value); } catch { throw new ExtractionError("invalid_url"); }
+  const youtube = url.hostname === "i.ytimg.com" && /^\/vi\/[A-Za-z0-9_-]{11}\/[A-Za-z0-9_-]+\.(?:jpg|webp)$/.test(url.pathname);
+  const instagram = /^(?:[a-z0-9-]+\.)*cdninstagram\.com$/.test(url.hostname) && /\.(?:jpg|jpeg|png|webp)$/i.test(url.pathname);
+  if (url.protocol !== "https:" || url.username || url.password || url.port || (!youtube && !instagram)) throw new ExtractionError("unsupported_url");
+  return url;
+}
+
 export function isPublicIPv4(address: string) {
   if (!/^\d{1,3}(?:\.\d{1,3}){3}$/.test(address)) return false;
   const [a, b, c, d] = address.split(".").map(Number);

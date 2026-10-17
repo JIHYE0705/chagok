@@ -34,6 +34,7 @@ export type Database = {
           created_at: string
           file_name: string
           id: string
+          is_cover: boolean
           item_id: string
           mime_type: string
           size_bytes: number
@@ -45,6 +46,7 @@ export type Database = {
           created_at?: string
           file_name?: string
           id?: string
+          is_cover?: boolean
           item_id: string
           mime_type: string
           size_bytes: number
@@ -56,6 +58,7 @@ export type Database = {
           created_at?: string
           file_name?: string
           id?: string
+          is_cover?: boolean
           item_id?: string
           mime_type?: string
           size_bytes?: number
@@ -567,6 +570,7 @@ export type Database = {
           created_at: string
           file_name: string
           id: string
+          is_cover: boolean
           item_id: string
           mime_type: string
           size_bytes: number
@@ -633,6 +637,10 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      set_item_cover: {
+        Args: { p_attachment_id?: string; p_item_id: string }
+        Returns: undefined
       }
       toggle_item_favorite: { Args: { p_item_id: string }; Returns: boolean }
       upsert_tag: {

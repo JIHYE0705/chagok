@@ -333,3 +333,15 @@ summary { cursor: pointer; padding: 10px 0; }
 .attachment-list li { padding: 12px 0; border-bottom: 1px solid var(--line, #e8dfcf); }
 .attachment-name { overflow-wrap: anywhere; }
 #attachment-file { max-width: 100%; }
+
+.item-cover { position: relative; aspect-ratio: 8 / 5; overflow: hidden; border-radius: 14px; background: #f7f0df; margin-bottom: 16px; }
+.item-cover > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cover-placeholder { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--muted); background: radial-gradient(ellipse at center, #fffdf7, #f4ead7); }
+.cover-placeholder > span:first-child { font-size: 3rem; }
+.item-cover-detail > img { object-fit: contain; }
+.cover-expand { position: absolute; right: 10px; bottom: 10px; }
+.cover-dialog { position: fixed; inset: 0; z-index: 100; box-sizing: border-box; width: min(94vw, 1100px); height: 90dvh; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: #fffdf7; }
+.cover-dialog::backdrop { background: #27231eaa; }
+.cover-dialog[open] { display: flex; flex-direction: column; gap: 12px; }
+.cover-dialog > button { align-self: flex-end; }
+.cover-dialog img { width: 100%; min-height: 0; flex: 1; object-fit: contain; }

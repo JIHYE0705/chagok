@@ -1,9 +1,8 @@
 import "server-only";
-import { resolve4 } from "node:dns/promises";
-import { request } from "node:https";
-import { ExtractionError, isPublicIPv4, validateDestination, validateSourceUrl } from "./url-policy";
+import { readPublicResource } from "./public-resource";
+import { ExtractionError, validateDestination, validateSourceUrl, validateThumbnailUrl } from "./url-policy";
 
-export type ExtractionResult = { status: "success" | "partial" | "failed"; canonicalUrl: string; title?: string; description?: string; author?: string; code?: string };
+export type ExtractionResult = { status: "success" | "partial" | "failed"; canonicalUrl: string; title?: string; description?: string; author?: string; thumbnailUrl?: string; code?: string };
 
 const decode = (value: string) => value.replace(/&(#x[\da-f]+|#\d+|amp|quot|apos|lt|gt|nbsp);/gi, (match, entity: string) => {
   const named: Record<string, string> = { amp: "&", quot: '"', apos: "'", lt: "<", gt: ">", nbsp: " " };
@@ -24,47 +23,8 @@ export function parseMetadata(html: string) {
   const title = [...(meta.get("og:title") || meta.get("twitter:title") || decode(head.match(/<title\b[^>]*>([^<]*)<\/title\s*>/i)?.[1] ?? ""))].slice(0, 200).join("");
   const description = [...(meta.get("og:description") || meta.get("description") || meta.get("twitter:description") || "")].slice(0, 4000).join("");
   const author = [...(meta.get("author") || meta.get("og:author") || "")].slice(0, 200).join("");
-  return { title, description, author };
-}
-
-async function readPublicBody(value: string, signal: AbortSignal, json: boolean): Promise<{ body?: string; redirect?: string }> {
-  const url = validateDestination(value);
-  // shortcut: use checked IPv4 destinations; add equally pinned IPv6 when a supported platform requires it.
-  const addresses = await new Promise<string[]>((resolve, reject) => {
-    const abort = () => reject(new ExtractionError("timeout"));
-    signal.addEventListener("abort", abort, { once: true });
-    resolve4(url.hostname).then(resolve, reject).finally(() => signal.removeEventListener("abort", abort));
-    if (signal.aborted) abort();
-  });
-  if (!addresses.length || addresses.some((address) => !isPublicIPv4(address))) throw new ExtractionError("private_destination");
-  return new Promise((resolve, reject) => {
-    const req = request(url, { signal, agent: false, family: 4, maxHeaderSize: 16384,
-      headers: { Accept: json ? "application/json" : "text/html", "Accept-Encoding": "identity", "User-Agent": "Chagok-Metadata/1.0" },
-      // Pin the checked address while TLS still verifies the original host; a second DNS lookup cannot rebind it.
-      lookup: (_hostname, _options, callback) => callback(null, addresses[0], 4),
-    }, (response) => {
-      if ([301, 302, 303, 307, 308].includes(response.statusCode ?? 0)) {
-        const location = response.headers.location;
-        if (!location) reject(new ExtractionError("redirect"));
-        else { try { resolve({ redirect: new URL(location, url).toString() }); } catch { reject(new ExtractionError("redirect")); } }
-        response.destroy(); return;
-      }
-      if (response.statusCode !== 200) { reject(new ExtractionError([401, 403, 429].includes(response.statusCode ?? 0) ? "restricted" : "unavailable")); response.destroy(); return; }
-      const contentType = json ? /^application\/json(?:;|$)/i : /^text\/html(?:;|$)/i;
-      if (!contentType.test(response.headers["content-type"] ?? "") || ![undefined, "identity"].includes(response.headers["content-encoding"])) { reject(new ExtractionError("content_type")); response.destroy(); return; }
-      const chunks: Buffer[] = []; let size = 0;
-      response.on("error", reject);
-      response.on("data", (chunk: Buffer) => {
-        size += chunk.length;
-        if (size > 512 * 1024) { reject(new ExtractionError("too_large")); response.destroy(); return; }
-        chunks.push(chunk);
-        if (!json && /<\/head\s*>|<body\b/i.test(Buffer.concat(chunks).toString("utf8"))) { resolve({ body: Buffer.concat(chunks).toString("utf8") }); response.destroy(); }
-      });
-      response.on("end", () => resolve({ body: Buffer.concat(chunks).toString("utf8") }));
-      response.on("aborted", () => reject(new ExtractionError("unavailable")));
-    });
-    req.on("error", reject); req.end();
-  });
+  const thumbnail = meta.get("og:image") || meta.get("twitter:image");
+  return { title, description, author, ...(thumbnail ? { thumbnailUrl: thumbnail } : {}) };
 }
 
 export async function extractMetadata(value: string): Promise<ExtractionResult> {
@@ -77,16 +37,20 @@ export async function extractMetadata(value: string): Promise<ExtractionResult> 
     let destination = json ? `https://www.youtube.com/oembed?url=${encodeURIComponent(canonicalUrl)}&format=json` : canonicalUrl;
     const signal = AbortSignal.timeout(8000);
     for (let redirects = 0; redirects <= 3; redirects++) {
-      const response = await readPublicBody(destination, signal, json);
+      const response = await readPublicResource(destination, signal, json ? "json" : "html");
       if (response.redirect) { validateDestination(response.redirect); destination = response.redirect; continue; }
       let metadata;
       if (json) {
-        const data = JSON.parse(response.body ?? "");
+        const data = JSON.parse(response.body?.toString("utf8") ?? "");
         if (!data || data.type !== "video" || typeof data.title !== "string" || (data.author_name !== undefined && typeof data.author_name !== "string")) throw new ExtractionError("no_metadata");
-        metadata = { title: [...data.title.trim()].slice(0, 200).join(""), description: "", author: [...(data.author_name ?? "").trim()].slice(0, 200).join("") };
-      } else metadata = parseMetadata(response.body ?? "");
+        metadata = { title: [...data.title.trim()].slice(0, 200).join(""), description: "", author: [...(data.author_name ?? "").trim()].slice(0, 200).join(""), ...(typeof data.thumbnail_url === "string" ? { thumbnailUrl: data.thumbnail_url } : {}) };
+      } else metadata = parseMetadata(response.body?.toString("utf8") ?? "");
       if (/^(?:log ?in|sign ?in|로그인|consent)(?:\s*[•|—-]\s*(?:Instagram|YouTube|Google))?$/i.test(metadata.title)) throw new ExtractionError("restricted");
       if (!metadata.title || /^(?:YouTube|Instagram)$/i.test(metadata.title)) throw new ExtractionError("no_metadata");
+      if (metadata.thumbnailUrl) {
+        try { metadata.thumbnailUrl = validateThumbnailUrl(metadata.thumbnailUrl).toString(); }
+        catch { delete metadata.thumbnailUrl; }
+      }
       return { canonicalUrl, ...metadata, status: metadata.description ? "success" : "partial" };
     }
     throw new ExtractionError("redirect");

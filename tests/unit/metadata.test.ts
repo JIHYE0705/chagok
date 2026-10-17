@@ -93,3 +93,11 @@ test("intentional stream destruction cannot mask the response-size error", async
   });
   expect(await extractMetadata(link)).toMatchObject({ code: "too_large" });
 });
+
+
+test("accepts bounded platform thumbnails and drops unsupported image metadata", async () => {
+  respond(JSON.stringify({ type: "video", title: "Video", thumbnail_url: "https://i.ytimg.com/vi/jNQXAC9IVRw/hqdefault.jpg" }), 200, { "content-type": "application/json" });
+  expect(await extractMetadata("https://youtu.be/jNQXAC9IVRw")).toMatchObject({ thumbnailUrl: "https://i.ytimg.com/vi/jNQXAC9IVRw/hqdefault.jpg", status: "partial" });
+  respond('<meta property="og:title" content="Photo"><meta property="og:image" content="https://localhost/private.png">');
+  expect(await extractMetadata(link)).not.toHaveProperty("thumbnailUrl");
+});
