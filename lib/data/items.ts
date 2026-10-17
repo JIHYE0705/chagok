@@ -17,7 +17,7 @@ export async function listItems(filters: Filters) {
   const rows = result.data ?? [];
   const ids = rows.slice(0, 24).map((row) => row.id);
   if (!ids.length) return { items: [], hasMore: false };
-  const { data, error } = await client.from("items").select("*, item_tags(tags(id, name))").eq("user_id", user.id).in("id", ids).order("created_at", { ascending: false }).order("id", { ascending: false });
+  const { data, error } = await client.from("items").select("*, item_tags(tags(id, name)), attachments(id, is_cover), sources(extraction_key)").eq("user_id", user.id).in("id", ids).order("created_at", { ascending: false }).order("id", { ascending: false });
   if (error) throw new Error(itemError);
   return { items: data ?? [], hasMore: rows.length > 24 };
 }

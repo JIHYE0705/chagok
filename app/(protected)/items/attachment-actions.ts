@@ -1,5 +1,6 @@
 "use server";
 
+import { setItemCover } from "../../../lib/data/covers";
 import { revalidatePath } from "next/cache";
 import { createSignedUpload, finishAttachment, attachmentReadUrl, deleteAttachment } from "../../../lib/data/attachments";
 
@@ -23,6 +24,13 @@ export async function readAttachmentAction(id: string) {
 export async function deleteAttachmentAction(id: string) {
   try { await deleteAttachment(id); }
   catch (error) { return { error: error instanceof Error ? error.message : "첨부를 삭제하지 못했어요." }; }
+  revalidatePath("/items", "layout");
+  return { error: "" };
+}
+
+export async function setItemCoverAction(itemId: string, attachmentId: string | null) {
+  try { await setItemCover(itemId, attachmentId); }
+  catch (error) { return { error: error instanceof Error ? error.message : "대표 사진을 바꾸지 못했어요." }; }
   revalidatePath("/items", "layout");
   return { error: "" };
 }

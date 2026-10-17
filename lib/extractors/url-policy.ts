@@ -15,13 +15,23 @@ export function validateSourceUrl(value: string) {
   if (typeof value !== "string" || value.length > 2000 || /[\u0000-\u0020\u007f\\]/.test(value.trim())) throw new ExtractionError("invalid_url");
   const url = validateDestination(value.trim());
   if (url.hostname.includes("instagram")) {
-    const match = url.pathname.match(/^\/(p|reel|tv)\/([A-Za-z0-9_-]{1,100})\/?$/);
+    const match = url.pathname.match(/^\/(p|reels?|tv)\/([A-Za-z0-9_-]{1,100})\/?$/);
     if (!match) throw new ExtractionError("unsupported_url");
-    return { platform: "instagram" as const, url: `https://www.instagram.com/${match[1]}/${match[2]}/` };
+    return { platform: "instagram" as const, url: `https://www.instagram.com/${match[1] === "reels" ? "reel" : match[1]}/${match[2]}/` };
   }
   const video = url.hostname === "youtu.be" ? url.pathname.slice(1) : url.pathname === "/watch" && url.searchParams.getAll("v").length === 1 ? url.searchParams.get("v") : url.pathname.match(/^\/(?:shorts|embed)\/([A-Za-z0-9_-]{11})\/?$/)?.[1];
   if (!video || !/^[A-Za-z0-9_-]{11}$/.test(video)) throw new ExtractionError("unsupported_url");
   return { platform: "youtube" as const, url: `https://www.youtube.com/watch?v=${video}` };
+}
+
+export function validateThumbnailUrl(value: string) {
+  if (typeof value !== "string" || value.length > 2000 || /[\u0000-\u0020\u007f\\]/.test(value)) throw new ExtractionError("invalid_url");
+  let url: URL;
+  try { url = new URL(value); } catch { throw new ExtractionError("invalid_url"); }
+  const youtube = url.hostname === "i.ytimg.com" && /^\/vi\/[A-Za-z0-9_-]{11}\/[A-Za-z0-9_-]+\.(?:jpg|webp)$/.test(url.pathname);
+  const instagram = /^(?:[a-z0-9-]+\.)*cdninstagram\.com$/.test(url.hostname) && /\.(?:jpg|jpeg|png|webp)$/i.test(url.pathname);
+  if (url.protocol !== "https:" || url.username || url.password || url.port || (!youtube && !instagram)) throw new ExtractionError("unsupported_url");
+  return url;
 }
 
 export function isPublicIPv4(address: string) {

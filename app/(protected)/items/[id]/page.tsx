@@ -1,3 +1,5 @@
+import { coverVersion } from "../../../../lib/data/cover-selection";
+import { ItemCover } from "../../../../components/item-cover";
 import { Attachments } from "../../../../components/attachments";
 import { listAttachments } from "../../../../lib/data/attachments";
 import Link from "next/link";
@@ -18,6 +20,7 @@ export default async function Item({ params }: { params: Promise<{ id: string }>
       <Link href="/items">← 보관함</Link>
       <p className="eyebrow">레시피</p>
       <h1>{item.title}</h1>
+      <ItemCover itemId={item.id} title={item.title} type={item.type} version={coverVersion(attachments, item.sources)} representative={attachments.some((file) => file.is_cover)} detail />
       <div className="library-toolbar">
         <FavoriteButton id={item.id} favorite={item.favorite} />
         <Link className="soft-button button-link" href={`/items/${item.id}/edit`}>수정하기</Link>

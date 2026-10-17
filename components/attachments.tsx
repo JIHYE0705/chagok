@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { signAttachmentAction, finishAttachmentAction, readAttachmentAction, deleteAttachmentAction } from "../app/(protected)/items/attachment-actions";
+import { setItemCoverAction, signAttachmentAction, finishAttachmentAction, readAttachmentAction, deleteAttachmentAction } from "../app/(protected)/items/attachment-actions";
 import { maxAttachments, validateUpload, matchesFileHeader, uploadTypes } from "../lib/storage/upload-policy";
 import type { Tables } from "../lib/data/types";
 
@@ -49,6 +49,16 @@ export function Attachments({ itemId, attachments }: { itemId: string; attachmen
     finally { xhr.current = null; setBusy(false); router.refresh(); }
   }
 
+  async function chooseCover(id: string | null) {
+    if (busy) return;
+    setBusy(true); setMessage("");
+    try {
+      const result = await setItemCoverAction(itemId, id);
+      setMessage(result.error || (id ? "대표 사진을 지정했어요." : "대표 사진을 해제했어요."));
+    } catch { setMessage("대표 사진을 바꾸지 못했어요. 다시 시도해 주세요."); }
+    finally { setBusy(false); router.refresh(); }
+  }
+
   async function remove(id: string) {
     if (busy || !window.confirm("이 첨부 파일을 삭제할까요?")) return;
     setBusy(true);
@@ -81,9 +91,10 @@ export function Attachments({ itemId, attachments }: { itemId: string; attachmen
     <p className="muted">비공개로 보관해요. JPEG·PNG·WebP·PDF, 파일당 5MB, 항목당 10개까지 첨부할 수 있어요.</p>
     <ul className="attachment-list">
       {attachments.map((attachment) => <li key={attachment.id}>
-        <span className="attachment-name">{attachment.file_name} · {(attachment.size_bytes / 1024).toFixed(0)}KB{attachment.status !== "ready" && " · 미완료"}</span>
+        <span className="attachment-name">{attachment.is_cover && "대표 사진 · "}{attachment.file_name} · {(attachment.size_bytes / 1024).toFixed(0)}KB{attachment.status !== "ready" && " · 미완료"}</span>
         <div className="library-toolbar">
           {attachment.status === "ready" && <button type="button" className="soft-button" disabled={busy} onClick={() => open(attachment.id, attachment.file_name)} aria-label={`${attachment.file_name} 다운로드`}>다운로드</button>}
+          {attachment.status === "ready" && attachment.mime_type.startsWith("image/") && <button type="button" className="soft-button" disabled={busy} onClick={() => chooseCover(attachment.is_cover ? null : attachment.id)} aria-label={`${attachment.file_name} ${attachment.is_cover ? "대표 해제" : "대표로 지정"}`}>{attachment.is_cover ? "대표 해제" : "대표로 지정"}</button>}
           <button type="button" className="soft-button" disabled={busy} onClick={() => remove(attachment.id)} aria-label={`${attachment.file_name} 첨부 삭제`}>첨부 삭제</button>
         </div>
       </li>)}
