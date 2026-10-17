@@ -5,6 +5,7 @@ test("canonicalizes supported HTTPS links without tracking or alternate video pa
   expect(validateSourceUrl("https://youtu.be/jNQXAC9IVRw?si=tracking").url).toBe("https://www.youtube.com/watch?v=jNQXAC9IVRw");
   expect(validateSourceUrl("https://m.youtube.com/shorts/jNQXAC9IVRw?t=20").url).toBe("https://www.youtube.com/watch?v=jNQXAC9IVRw");
   expect(validateSourceUrl("https://instagram.com/reel/ABC_123/?igsh=tracking").url).toBe("https://www.instagram.com/reel/ABC_123/");
+  expect(validateSourceUrl("https://www.instagram.com/reels/Ddgo7NlyBhb/?igsh=tracking").url).toBe("https://www.instagram.com/reel/Ddgo7NlyBhb/");
 });
 
 test.each(["http://youtube.com/watch?v=jNQXAC9IVRw", "https://youtube.com.evil.test/watch?v=jNQXAC9IVRw", "https://user:pass@youtube.com/watch?v=jNQXAC9IVRw", "https://youtube.com:444/watch?v=jNQXAC9IVRw", "https://127.1/", "https://[::1]/", "https://localhost/", "file:///etc/passwd", "javascript:alert(1)", "https://youtube.com/redirect?q=https://localhost", "https://instagram.com/accounts/login/", "https://www.youtube.com/watch?v=jNQXAC9IVRw&v=aaaaaaaaaaa"])("rejects unsafe or unsupported URLs: %s", (url) => {
