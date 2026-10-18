@@ -26,6 +26,11 @@ test.describe("linked Supabase library", () => {
     await page.getByRole("button", { name: "☆ 즐겨찾기 추가" }).click();
     await expect(page.getByRole("button", { name: "★ 즐겨찾기 해제" })).toBeVisible();
     await page.getByRole("link", { name: "← 보관함" }).click();
+    await page.getByRole("button", { name: "목록형", exact: true }).click();
+    await expect(page.locator(".library-results")).toHaveAttribute("data-view", "list");
+    const restored = await page.reload();
+    expect(await restored!.text()).toContain('class="library-results" data-view="list"');
+    await expect(page.getByRole("button", { name: "목록형", exact: true })).toHaveAttribute("aria-pressed", "true");
     await page.getByLabel("보관함 검색").fill("얇게");
     await page.getByRole("button", { name: "검색", exact: true }).click();
     await expect(page).toHaveURL(/q=/);
@@ -36,6 +41,13 @@ test.describe("linked Supabase library", () => {
     await page.getByRole("button", { name: "검색", exact: true }).click();
     await expect(page).toHaveURL(/favorite=1/);
     await expect(page.getByRole("heading", { name: "고구마 누룽지" })).toBeVisible();
+    const filteredUrl = page.url();
+    await page.getByRole("button", { name: "카드형", exact: true }).focus();
+    await page.keyboard.press("Space");
+    await expect(page.locator(".library-results")).toHaveAttribute("data-view", "cards");
+    expect(page.url()).toBe(filteredUrl);
+    await expect(page.getByLabel("보관함 검색")).toHaveValue("SWEET");
+    await expect(page.getByLabel("즐겨찾기만")).toBeChecked();
     await page.screenshot({ path: "/private/tmp/chagok-library-mobile.png", fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await page.getByRole("button", { name: "★ 즐겨찾기 해제" }).click();
@@ -82,6 +94,42 @@ test.describe("linked Supabase library", () => {
     await page.getByRole("button", { name: "간식 삭제", exact: true }).click();
     await expect(page.getByRole("link", { name: "#간식" })).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "보존할 제목" })).toBeVisible();
+  });
+
+  test("both library views retain private covers, long titles and a local rounded font at every width", async ({ page, context }) => {
+    test.setTimeout(120000);
+    const owner = await session(context, true);
+    const title = "냉장고 속 남은 재료로 만드는 주말 한 끼 — 바쁜 날에도 꺼내 보기 좋은 초간단 레시피와 재료 보관 팁까지 차곡차곡 모아 두기";
+    const saved = await owner.client.rpc("save_item", { p_title: title, p_summary: "감자 200 g · 우유 150 ml · 180 ℃ · ½큰술 · 2인분", p_body: "화면 검증용 예시이며 실제 조리 조건이 아닙니다.", p_notes: "", p_tags: ["집밥"] });
+    expect(saved.error).toBeNull();
+    expect((await owner.client.rpc("save_item", { p_title: "사진 없이 담은 레시피", p_summary: "분량 미기재", p_body: "", p_notes: "", p_tags: [] })).error).toBeNull();
+    const externalFonts: string[] = [];
+    page.on("request", request => { if (request.resourceType() === "font" && new URL(request.url()).hostname !== "127.0.0.1") externalFonts.push(request.url()); });
+    await page.goto(`/items/${saved.data}`);
+    // A valid one-pixel PNG tests private Storage and cover delivery, not food photography.
+    await page.getByLabel("첨부 파일 선택").setInputFiles({ name: "표지.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jW3sAAAAASUVORK5CYII=", "base64") });
+    await page.getByRole("button", { name: "첨부하기", exact: true }).click();
+    await page.getByRole("button", { name: "표지.png 대표로 지정", exact: true }).click();
+    await expect(page.getByRole("button", { name: "표지.png 대표 해제", exact: true })).toBeVisible();
+    await page.getByRole("link", { name: "← 보관함", exact: true }).click();
+    const card = page.locator(".item-card").filter({ has: page.getByRole("heading", { name: title, exact: true }) });
+    for (const width of [320, 390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const [view, label] of [["cards", "카드형"], ["list", "목록형"]] as const) {
+        await page.getByRole("button", { name: label, exact: true }).click();
+        await expect(page.locator(".library-results")).toHaveAttribute("data-view", view);
+        await expect(page.locator(".item-card")).toHaveCount(2);
+        await expect(card.getByRole("heading", { name: title, exact: true })).toBeVisible();
+        await expect.poll(() => card.locator("img").evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+        await page.evaluate(() => document.fonts.ready);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        if (width === 320 || width === 1440) await page.screenshot({ path: `output/playwright/library-${view}-${width}.png`, fullPage: true });
+      }
+    }
+    expect(await page.evaluate(() => [...document.fonts].some(font => font.status === "loaded" && font.family.includes("nanumSquareRound")))).toBe(true);
+    expect(externalFonts).toEqual([]);
+    await card.getByRole("link", { name: title, exact: true }).click();
+    await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
   });
 
   test("other owners cannot render or mutate private items", async ({ page, context, browser }) => {

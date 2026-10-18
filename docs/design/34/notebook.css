@@ -1,0 +1,104 @@
+/* B's compact structure with Chagok's existing notebook character and paper palette. */
+.brand-mascot,.notebook-greeting{display:none}
+body[data-direction=b2]{--bg:#fffdf7;--surface:#fffefa;--ink:#44382f;--muted:#75675b;--line:#e9e1d4;--accent:#64533b;--soft:#f7eedb;--font:Pretendard,'Apple SD Gothic Neo',sans-serif}
+body[data-direction=b2] .product{max-width:1160px;padding:0 48px}
+body[data-direction=b2] .product-header{height:98px;gap:48px;border-bottom-color:var(--line)}
+body[data-direction=b2] .brand{display:flex;align-items:center;font-family:var(--font);font-weight:400;font-size:30px;letter-spacing:-.07em;gap:4px;min-height:44px}
+body[data-direction=b2] .brand-mascot{display:block;width:47px;height:47px;margin-right:4px}
+body[data-direction=b2] .brand-dot,body[data-direction=b2] .personal,body[data-direction=b2] .overline{display:none}
+body[data-direction=b2] .product-header nav{gap:26px}
+body[data-direction=b2] .product-header nav a{position:relative;border:0;color:var(--muted)}
+body[data-direction=b2] .product-header nav a[aria-current=page]{color:var(--ink)}
+body[data-direction=b2] .product-header nav a[aria-current=page]::after{content:'';position:absolute;bottom:8px;left:0;right:0;height:5px;background:#f4d77f;border-radius:50% 40% 45% 30%;transform:rotate(-2deg)}
+body[data-direction=b2] main{padding-top:42px}
+body[data-direction=b2] .library{position:relative}
+body[data-direction=b2] .page-heading{margin-bottom:30px;align-items:flex-end}
+body[data-direction=b2] .page-heading h1,body[data-direction=b2] .detail h1{font-size:30px;font-weight:600;letter-spacing:-.045em}
+body[data-direction=b2] .page-heading .intro{font-size:14px;margin-top:8px}
+body[data-direction=b2] .notebook-greeting{display:flex;align-items:center;gap:6px;position:absolute;right:148px;top:-18px;transform:rotate(-4deg);color:#80633f;font-family:var(--font);font-size:14px}
+body[data-direction=b2] .notebook-greeting img{width:77px;height:77px}
+body[data-direction=b2] .notebook-greeting span{max-width:70px;line-height:1.8}
+body[data-direction=b2] .button{border-radius:11px}
+body[data-direction=b2] .button.primary{background:#ffe496;border-color:#ddc476;color:#4d3d25}
+body[data-direction=b2] .library-layout{grid-template-columns:150px minmax(0,1fr);gap:38px}
+body[data-direction=b2] .collection-sidebar{border:0;padding:4px 18px 0 0}
+body[data-direction=b2] .sidebar-label{font-family:var(--font);font-size:13px;color:var(--muted);margin-bottom:10px}
+body[data-direction=b2] .side-filter{font-size:13px;padding:10px 12px}
+body[data-direction=b2] .side-filter.selected{background:#fff0ba;color:#59482f;border-radius:7px 12px 8px 6px}
+body[data-direction=b2] .side-filter[data-filter=favorite].selected{background:#ffe6e8}
+body[data-direction=b2] .search{border-radius:10px;background:#fffefa;padding-top:3px;padding-bottom:3px}
+body[data-direction=b2] .search>span{font-size:25px}
+body[data-direction=b2] .search input{font-size:14px}
+body[data-direction=b2] .search button{background:transparent;border-left:1px solid var(--line);border-radius:0;color:var(--muted)}
+body[data-direction=b2] .filter-row{margin:12px 0 0}
+body[data-direction=b2] .filters{gap:4px}
+body[data-direction=b2] .filters button{border-radius:5px;padding:6px 12px;color:var(--muted)}
+body[data-direction=b2] .filters button[aria-pressed=true]{background:#fff0ba;border-color:transparent;color:#59482f}
+body[data-direction=b2] .result-count{font-size:12px;margin:12px 0 0}
+body[data-direction=b2] .recipe-card{padding:24px 0;gap:22px}
+body[data-direction=b2] .cover{width:112px;aspect-ratio:1;border-radius:11px}
+body[data-direction=b2] .cover-credit{font-size:9px;left:5px;bottom:5px}
+body[data-direction=b2] .recipe-card.text-only .cover{display:none}
+body[data-direction=b2] .card-content{position:relative;min-height:108px;padding-right:48px}
+body[data-direction=b2] .card-meta{font-size:11px;margin-bottom:7px;justify-content:flex-start}
+body[data-direction=b2] .card-meta time{margin-left:auto;white-space:nowrap}
+body[data-direction=b2] .card-content h2{font-size:18px;line-height:1.55;letter-spacing:-.025em;max-width:35em}
+body[data-direction=b2] .card-summary{font-size:13px;margin:7px 0 11px;line-height:1.7;max-width:40em}
+body[data-direction=b2] .tags{gap:12px}
+body[data-direction=b2] .tags span{border-radius:0;background:transparent;color:var(--muted);padding:0;font-size:11px}
+body[data-direction=b2] .tags span::before{content:'#';color:#a8947e;margin-right:2px}
+body[data-direction=b2] .favorite{position:absolute;right:0;top:20px;font-size:23px;min-height:44px;min-width:44px;color:#87766a}
+body[data-direction=b2] .favorite[aria-pressed=true]{color:#a75f60;background:#fff0ef;border-radius:50% 45% 48% 43%}
+body[data-direction=b2] .detail{max-width:850px;margin:auto}
+body[data-direction=b2] .detail-top{display:block}
+body[data-direction=b2] .detail-cover{display:none}
+body[data-direction=b2] .detail-title .tags{margin-top:16px}
+body[data-direction=b2] .detail-title .caption{margin-top:10px}
+body[data-direction=b2] .detail-layout{grid-template-columns:230px minmax(0,1fr);gap:52px}
+body[data-direction=b2] .note{background:#fff3ca;border-radius:3px 9px 7px 3px;border-left:3px solid #e4c56b;font-size:13px;padding:16px}
+body[data-direction=b2] .steps .step-number{font-family:var(--font);color:#927445}
+body[data-direction=b2] .steps h3{font-weight:500}
+body[data-direction=b2] .section-heading h2,body[data-direction=b2] .method-section>h2{display:inline-block;background:linear-gradient(transparent 70%,#f9e8a6 70%);width:fit-content}
+body[data-direction=b2] .editor{max-width:960px}
+body[data-direction=b2] .editor-layout{gap:44px}
+body[data-direction=b2] .section-index{display:none}
+body[data-direction=b2] .editor-source{background:#fbf6e9;border-color:#e9dfc6;border-radius:6px 16px 12px 6px;padding:24px;position:relative}
+body[data-direction=b2] .editor-source::before{content:'';position:absolute;width:70px;height:20px;top:-10px;left:24px;background:#f6dda0b0;transform:rotate(-4deg)}
+body[data-direction=b2] .editor-source h2,body[data-direction=b2] .editor-result h2{font-size:19px;font-weight:500}
+body[data-direction=b2] .editor-result{padding-top:24px}
+body[data-direction=b2] .editor input,body[data-direction=b2] .editor textarea,body[data-direction=b2] .editor select{background:#fffefa;border-radius:7px}
+body[data-direction=b2] .product-footer{margin-top:48px;font-size:12px}
+body[data-direction=b2] .product-footer>span{font-family:var(--font);font-size:14px}
+@media(min-width:1001px){body[data-direction=b2] .filter-row .filters{display:none}}
+@media(max-width:1000px){body[data-direction=b2] .product{padding:0 32px}body[data-direction=b2] .notebook-greeting{display:none}body[data-direction=b2] .library-layout{grid-template-columns:135px minmax(0,1fr);gap:24px}body[data-direction=b2] .cover{width:96px}body[data-direction=b2] .card-content h2{font-size:17px}body[data-direction=b2] .detail-layout{gap:32px;grid-template-columns:210px minmax(0,1fr)}}
+@media(max-width:650px){.switcher button{font-size:12px;padding:6px}.review-note{font-size:11px}body[data-direction=b2] .product{padding:0 20px}body[data-direction=b2] .product-header{min-height:83px;height:auto;gap:8px;padding:10px 0}body[data-direction=b2] .brand{font-size:25px;gap:0}body[data-direction=b2] .brand-mascot{width:34px;height:34px;margin-right:2px}body[data-direction=b2] .product-header nav{gap:12px}body[data-direction=b2] .product-header nav a{font-size:12px}body[data-direction=b2] main{padding-top:28px}body[data-direction=b2] .page-heading{margin-bottom:22px;gap:18px}body[data-direction=b2] .page-heading h1,body[data-direction=b2] .detail h1{font-size:27px}body[data-direction=b2] .intro{font-size:13px}body[data-direction=b2] .library-layout{grid-template-columns:1fr}body[data-direction=b2] .cover{width:82px;border-radius:9px}body[data-direction=b2] .recipe-card{gap:14px;padding:22px 0}body[data-direction=b2] .card-content{padding-right:48px;min-height:96px}body[data-direction=b2] .card-content h2{font-size:16px;line-height:1.6}body[data-direction=b2] .card-meta{font-size:10px}body[data-direction=b2] .card-summary{font-size:12px;-webkit-line-clamp:2;margin-bottom:9px}body[data-direction=b2] .tags{gap:8px}body[data-direction=b2] .tags span{font-size:11px;padding:0}body[data-direction=b2] .favorite{right:0;top:22px;font-size:21px;min-width:44px}body[data-direction=b2] .recipe-card.text-only .card-content{padding-left:0}body[data-direction=b2] .detail-layout{grid-template-columns:1fr;gap:24px}body[data-direction=b2] .editor-layout{grid-template-columns:1fr;gap:24px}body[data-direction=b2] .editor-source{padding:20px}body[data-direction=b2] .editor-result{padding-top:8px}}
+
+@font-face{font-family:NanumRoundPreview;src:url('../../../app/fonts/NanumSquareRound-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:NanumRoundPreview;src:url('../../../app/fonts/NanumSquareRound-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+body:is([data-direction=a],[data-direction=b],[data-direction=b2]){--font:NanumRoundPreview,'Apple SD Gothic Neo',sans-serif}
+.notebook-view-controls{display:none}
+body[data-direction=b2] .results-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:12px}
+body[data-direction=b2] .results-toolbar .result-count{margin:0}
+body[data-direction=b2] .notebook-view-controls{display:flex;gap:4px}
+body[data-direction=b2] .notebook-view-controls button{font-size:13px;min-height:44px;padding:7px 14px;background:transparent;border:1px solid transparent;border-radius:9px;color:var(--muted)}
+body[data-direction=b2] .notebook-view-controls button[aria-pressed=true]{background:#fff0ba;border-color:#e7cf8c;color:#59482f;font-weight:700}
+body[data-direction=b2][data-view=cards] .library-layout{grid-template-columns:1fr}
+body[data-direction=b2][data-view=cards] .collection-sidebar{display:none}
+body[data-direction=b2][data-view=cards] .filter-row .filters{display:flex}
+body[data-direction=b2][data-view=cards] .recipe-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:16px}
+body[data-direction=b2][data-view=cards] .recipe-card{display:flex;flex-direction:column;gap:0;padding:0;border:1px solid var(--line);border-radius:18px;background:var(--surface);overflow:hidden}
+body[data-direction=b2][data-view=cards] .recipe-card .cover{display:block;width:100%;aspect-ratio:8/5;border-radius:0;align-self:auto}
+body[data-direction=b2][data-view=cards] .card-content{padding:18px 20px 16px;min-height:230px}
+body[data-direction=b2][data-view=cards] .card-content h2{font-size:18px;min-height:56px}
+body[data-direction=b2][data-view=cards] .card-meta{flex-wrap:wrap;margin-bottom:8px;padding-right:0}
+body[data-direction=b2][data-view=cards] .card-meta time{margin-left:0}
+body[data-direction=b2][data-view=cards] .favorite{position:static;min-width:44px}
+body[data-direction=b2][data-view=cards] .card-summary{margin-top:8px;margin-bottom:12px}
+body[data-direction=b2][data-view=cards] .card-bottom{margin-top:auto}
+body[data-direction=b2][data-view=cards] .cover .no-photo{background:#fbf2d8}
+body[data-direction=b2][data-view=cards] .paper-mark{font-size:0}
+body[data-direction=b2][data-view=cards] .paper-mark::before{content:'';display:block;width:80px;height:80px;background:url('../../../public/chagok-note.svg') center/contain no-repeat}
+@media(max-width:1000px){body[data-direction=b2][data-view=cards] .recipe-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){body[data-direction=b2][data-view=cards] .recipe-grid{grid-template-columns:1fr;gap:20px}body[data-direction=b2][data-view=cards] .card-content{min-height:0}body[data-direction=b2][data-view=cards] .card-content h2{min-height:0}body[data-direction=b2][data-view=cards] .card-meta time{display:block}body[data-direction=b2][data-view=cards] .card-meta{font-size:11px}body[data-direction=b2][data-view=cards] .card-summary{font-size:13px}body[data-direction=b2][data-view=cards] .cover .no-photo>span:not(.paper-mark){display:block}}
+
+.brand-wordmark{display:inline-block;width:76px;height:40px;vertical-align:middle}body[data-direction=b2] .brand{gap:2px}body[data-direction=b2] .brand-wordmark{width:76px;height:40px}@media(max-width:650px){body[data-direction=b2] .brand-wordmark{width:66px;height:35px}}

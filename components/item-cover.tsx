@@ -14,7 +14,7 @@ export function ItemCover({ itemId, title, type, version, representative = false
     {hasImage ? <>
       <Image src={src} alt={`${title} 표지`} width={640} height={400} unoptimized onError={fail} />
       {detail && <button type="button" className="soft-button cover-expand" onClick={() => dialog.current?.showModal()}>사진 전체 보기</button>}
-    </> : <div className="cover-placeholder" role="img" aria-label={`${type === "recipe" ? "레시피" : "정보"} 기본 표지`}><span aria-hidden="true">{type === "recipe" ? "🥣" : "📒"}</span><span>{type === "recipe" ? "맛있는 기록 한 장" : "차곡차곡 모은 기록"}</span></div>}
+    </> : <div className="cover-placeholder" role="img" aria-label={`${type === "recipe" ? "레시피" : "정보"} 기본 표지`}><Image src="/chagok-note.svg" alt="" width={84} height={84} /><span>{type === "recipe" ? "맛있는 기록 한 장" : "차곡차곡 모은 기록"}</span></div>}
     {hasImage && detail && <dialog ref={dialog} className="cover-dialog" aria-label="표지 사진 전체 보기">
       <button type="button" className="soft-button" autoFocus onClick={() => dialog.current?.close()}>사진 닫기</button>
       <Image src={src} alt={`${title} 전체 사진`} width={1200} height={1200} unoptimized onError={() => { fail(); dialog.current?.close(); }} />

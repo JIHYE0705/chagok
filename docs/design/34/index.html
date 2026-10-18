@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>차곡 · 디자인 방향 비교</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="preview.css">
+  <link rel="stylesheet" href="notebook.css">
+  <script src="preview.js" defer></script>
+</head>
+<body data-direction="a">
+  <a class="skip-link" href="#content">본문으로 이동</a>
+  <header class="review-bar">
+    <a class="review-title" href="research.md">DESIGN STUDY <span>차곡 #34</span></a>
+    <div class="switcher" role="group" aria-label="디자인 방향">
+      <button type="button" data-direction="a" aria-pressed="true">A · 노트</button>
+      <button type="button" data-direction="b" aria-pressed="false">B · 원안</button>
+      <button type="button" data-direction="b2" aria-pressed="false">B · 차곡 노트</button>
+    </div>
+    <label class="font-picker">글꼴 <select id="font"><option value="direction">나눔스퀘어라운드 · 기본</option><option value="pretendard">Pretendard</option><option value="noto">Noto Sans KR</option><option value="gowun">현재 고운돋움</option></select></label>
+  </header>
+  <p class="review-note">디자인 비교용 예시예요. 화면 이동·검색·즐겨찾기를 눌러 볼 수 있으며, 입력 내용은 서버에 저장하지 않아요.</p>
+  <div class="product">
+    <header class="product-header">
+      <a class="brand" href="#library" aria-label="차곡 보관함"><img class="brand-mascot" src="../../../public/chagok-note.svg" alt=""><img class="brand-wordmark" src="../../../public/chagok-wordmark.svg" alt="차곡"></a>
+      <nav aria-label="주요 화면"><a href="#library" data-page="library" aria-current="page">보관함</a><a href="#detail" data-page="detail">레시피 상세</a><a href="#editor" data-page="editor">새로 담기</a></nav>
+      <span class="personal">나만의 작은 보관함</span>
+    </header>
+    <main id="content" tabindex="-1"></main>
+    <footer class="product-footer"><span>좋았던 발견을, 차곡차곡.</span><a href="research.md">레퍼런스와 비교 기준 ↗</a></footer>
+  </div>
+  <template id="library-template">
+    <section class="library">
+      <div class="page-heading"><div><p class="overline">MY COLLECTION</p><h1>나의 보관함</h1><p class="intro">다시 만들고 싶은 맛, 오래 기억하고 싶은 발견.</p></div><a class="button primary" href="#editor">＋ 새로 담기</a></div>
+      <div class="notebook-greeting"><img src="../../../public/chagok-note.svg" alt=""><span>잊기 전에, 차곡.</span></div>
+      <div class="library-layout"><aside class="collection-sidebar" aria-label="보관함 필터"><span class="sidebar-label">내 보관함</span><button type="button" class="side-filter selected" data-filter="all">모든 항목 <span>4</span></button><button type="button" class="side-filter" data-filter="favorite">즐겨찾기 <span class="favorite-count">2</span></button><span class="sidebar-label">태그</span><button type="button" class="side-filter" data-filter="간식"># 간식</button><button type="button" class="side-filter" data-filter="집밥"># 집밥</button><button type="button" class="side-filter" data-filter="도시락"># 도시락</button></aside>
+      <div class="library-main"><form class="search" role="search"><label class="sr-only" for="search">보관함 검색</label><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="제목, 재료, 기억나는 한마디"><button type="submit">검색</button></form>
+      <div class="filter-row"><div class="filters" role="group" aria-label="빠른 필터"><button type="button" data-filter="all" aria-pressed="true">전체</button><button type="button" data-filter="favorite" aria-pressed="false">즐겨찾기</button><button type="button" data-filter="간식" aria-pressed="false">간식</button><button type="button" data-filter="집밥" aria-pressed="false">집밥</button></div><label class="sort-label">정렬 <select aria-label="정렬"><option>최근 담은 순</option><option>제목순</option></select></label></div>
+      <div class="results-toolbar"><p id="result-count" class="result-count" role="status" aria-live="polite"></p><div class="notebook-view-controls" role="group" aria-label="보관함 보기 방식"><button type="button" data-view="cards" aria-pressed="true">카드형</button><button type="button" data-view="list" aria-pressed="false">목록형</button></div></div><div class="recipe-grid"></div>
+      <div class="empty" hidden><span class="empty-symbol" aria-hidden="true">⌕</span><h2>아직 담긴 발견이 없어요</h2><p>다른 검색어로 찾아보거나 새로운 레시피를 담아 보세요.</p><button type="button" class="button" id="clear-search">전체 보기</button></div>
+      </div></div>
+    </section>
+  </template>
+  <template id="detail-template">
+    <article class="detail"><a href="#library" class="back-link">← 보관함으로</a><div class="detail-top"><div class="detail-title"><p class="overline">RECIPE · 텍스트로 담은 레시피</p><h1>고구마 누룽지</h1><p class="intro">얇게 펴서 바삭하게 굽는 간식.</p><div class="tags"><span>간식</span><span>다시 만들기</span></div><p class="caption">저장 예시 · 기존 테스트 원문을 사용했어요.</p></div><div class="detail-cover no-photo"><span class="paper-mark" aria-hidden="true">≋</span><span>사진 없이 담은 레시피</span></div></div>
+    <div class="detail-actions"><button type="button" class="button" id="detail-favorite" aria-pressed="false">♡ 즐겨찾기</button><a class="button" href="#editor">수정하기</a></div>
+    <div class="detail-layout"><aside class="ingredient-section"><div class="section-heading"><h2>재료</h2><span class="caption">분량 미기재</span></div><p class="section-copy">원문에 적힌 재료예요.</p><dl class="ingredients"><div><dt>고구마</dt><dd>미기재</dd></div><div><dt>올리브유</dt><dd>미기재</dd></div></dl><div class="note"><strong>빈칸도 기록이에요</strong><p>인분·시간·온도는 원문에 없어 비워 두었어요.</p></div></aside>
+    <div class="method-section"><h2>만드는 법</h2><ol class="steps"><li><span class="step-number" aria-hidden="true">01</span><div><h3>얇게 펴기</h3><p>고구마를 얇게 펴요.</p></div></li><li><span class="step-number" aria-hidden="true">02</span><div><h3>오븐에 굽기</h3><p>오븐에 구워요.</p><p class="caption">굽는 시간과 온도는 미기재예요.</p></div></li></ol><section class="source"><h2>출처와 원문</h2><p>텍스트 붙여넣기 · 저장 전 확인한 내용</p><details><summary>보존한 원문 보기</summary><p class="raw-text">고구마 누룽지
+
+[재료]
+고구마
+올리브유
+[만드는 법]
+1. 고구마를 얇게 펴요.
+2) 오븐에 구워요.</p></details></section></div></div>
+    <section class="type-specimen"><h2>글꼴 읽어보기</h2><p>감자 200 g · 우유 150 ml · 180 ℃ · ½큰술 · 2인분</p><p class="caption">단위·긴 문장 비교용 예시이며 위 레시피의 분량이나 조리 조건이 아니에요.</p><p>약한 불에서 천천히 저으며 농도를 확인하고, 재료가 바닥에 달라붙지 않도록 가장자리까지 고르게 섞어 주세요. 긴 조리 단계에서도 줄 사이를 따라 읽기 편한지 확인해 보세요.</p></section>
+    </article>
+  </template>
+  <template id="editor-template">
+    <section class="editor"><a href="#library" class="back-link">← 보관함으로</a><div class="page-heading"><div><p class="overline">SAVE A LITTLE DISCOVERY</p><h1>새로운 발견 담기</h1><p class="intro">원문은 그대로 두고, 내가 보기 좋게 정리해요.</p></div></div>
+    <form id="recipe-form"><div class="editor-layout"><section class="editor-source"><span class="section-index">01 · 가져온 내용</span><h2>어디서 발견했나요?</h2><label for="capture-kind">입력 방식</label><select id="capture-kind"><option>텍스트 붙여넣기</option><option>직접 작성</option><option>링크 가져오기</option></select><label for="source-url">원본 링크 <span class="caption">선택</span></label><input id="source-url" type="url" placeholder="https://"><label for="raw-text">원문</label><textarea id="raw-text" rows="10">고구마 누룽지
+
+[재료]
+고구마
+올리브유
+[만드는 법]
+1. 고구마를 얇게 펴요.
+2) 오븐에 구워요.</textarea><p class="field-help">원문은 정리 결과와 따로 보관해요.</p><div class="note"><strong>모르는 값은 비워 두세요</strong><p>분량과 조리 조건을 추측해서 채우지 않아도 괜찮아요.</p></div></section>
+    <section class="editor-result"><span class="section-index">02 · 내가 보기 좋게</span><h2>저장할 내용 확인</h2><label for="title">제목 <span class="required">필수</span></label><textarea id="title" rows="2" required maxlength="200">고구마 누룽지</textarea><label for="summary">요약 <span class="caption">선택</span></label><textarea id="summary" rows="2">얇게 펴서 바삭하게 굽는 간식.</textarea><label for="ingredients">재료와 분량</label><textarea id="ingredients" rows="3" aria-describedby="ingredient-help">고구마
+올리브유</textarea><p class="field-help" id="ingredient-help">한 줄에 하나씩 이름 | 분량. 모르는 분량은 비워 두세요.</p><label for="steps">조리 단계</label><textarea id="steps" rows="4">고구마를 얇게 펴요.
+오븐에 구워요.</textarea><label for="tags">태그</label><input id="tags" value="간식, 다시 만들기"><div class="form-actions"><a href="#library">취소</a><button type="submit" class="button primary">저장 미리보기</button></div><p id="save-status" role="status" aria-live="polite"></p></section></div></form>
+    </section>
+  </template>
+</body>
+</html>

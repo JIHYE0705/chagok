@@ -3,11 +3,13 @@ import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import "./globals.css";
 
-const gowunDodum = localFont({
-  src: "./fonts/GowunDodum-Regular.woff2",
-  weight: "400",
+const nanumSquareRound = localFont({
+  src: [
+    { path: "./fonts/NanumSquareRound-Regular.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/NanumSquareRound-Bold.woff2", weight: "700", style: "normal" },
+  ],
   display: "swap",
-  variable: "--font-gowun-dodum",
+  variable: "--font-nanum-square-round",
 });
 
 export const metadata: Metadata = {
@@ -18,7 +20,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="ko" className={gowunDodum.variable}>
+    <html lang="ko" className={nanumSquareRound.variable}>
       <body>{children}</body>
     </html>
   );
