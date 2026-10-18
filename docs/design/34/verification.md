@@ -11,6 +11,7 @@
 - 최초 검증 스크립트는 label을 `제목`으로 정확히 일치시켜 `제목 필수`를 찾지 못하고 timeout 됐다. 실제 접근 가능한 이름에 맞춰 수정한 뒤 8개 assertion 통과. 제품 결함으로 처리하지 않았다.
 - Pretendard/Noto Sans KR/기존 고운돋움의 FontFaceSet loaded 상태를 확인했다. 외부 웹폰트 로딩 완료 후 캡처했다.
 - 24개 화면의 가로 넘침 확인은 수정 후 재실행했다. 캡처는 이 문서와 같은 폴더의 `screens/`에 보관한다.
+- 초안 PR #36의 최초 코드 커밋 `e938feb`에서 GitHub CI Check와 App Checks 통과. App Checks에서 typecheck·unit·lint·build·공개 화면 E2E가 실행됐다. Linked Supabase DB와 Supabase Preview는 skipped였으며 DB 검증으로 보지 않는다. 이후 변경은 이 문서와 Notion 레퍼런스 캡처 교체다.
 
 ## 주요 색상 대비 계산
 
@@ -29,7 +30,7 @@ WCAG 상대 휘도 공식으로 후보 색상값을 계산했다. 모든 화면 
 
 ## 실행하지 않은 검증
 
-- 앱 unit/lint/typecheck/build/연결 DB/E2E: 제품 코드를 변경하지 않은 조사·시안 단계이므로 실행하지 않았다.
+- 앱 unit/lint/typecheck/build/E2E는 로컬에서 별도 실행하지 않았다. 위 GitHub CI의 검사 범위와 구분한다. 연결 DB 검증은 실행하지 않았다.
 - 실제 Instagram 수집 데이터의 A/B 비교, Google 로그인, 실제 저장/수정/첨부/사진 선택: 연결하지 않았다.
 - 실제 휴대폰/태블릿, 스크린리더, 실제 브라우저 확대, 느린 네트워크 CLS, 전체 접근성 자동 검사: 미실행. 구현 단계에서 완료해야 한다.
 - 레퍼런스 페이지에는 외부 분석/광고 요청 오류가 일부 있었으나 관찰한 주요 공개 UI와 이미지가 표시됐다. 해당 서비스의 완전한 동작을 검증한 것은 아니다.
