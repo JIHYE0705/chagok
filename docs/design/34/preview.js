@@ -7,7 +7,7 @@ const recipes = [
 ];
 const content = document.getElementById('content');
 const params = new URLSearchParams(location.search);
-let direction = params.get('direction') === 'b' ? 'b' : 'a';
+let direction = ['a', 'b', 'b2'].includes(params.get('direction')) ? params.get('direction') : 'a';
 let filter = 'all';
 let query = '';
 const drafts = new Map();
@@ -19,6 +19,7 @@ function setDirection(value) {
   const url = new URL(location.href);
   url.searchParams.set('direction', value);
   history.replaceState(null, '', url);
+  if (content.childElementCount) renderPage();
 }
 document.querySelectorAll('.switcher button').forEach(button => button.addEventListener('click', () => setDirection(button.dataset.direction)));
 document.getElementById('font').addEventListener('change', event => {
@@ -34,6 +35,7 @@ function renderCards() {
   sorted.forEach(recipe => {
     const card = document.createElement('article');
     card.className = 'recipe-card';
+    card.classList.toggle('text-only', !recipe.image);
     // Fixture text is assigned as textContent below, including the deliberately long title.
     card.innerHTML = `<a class="cover" href="#detail"><div class="no-photo" style="width:100%;height:100%"><span class="paper-mark" aria-hidden="true">≋</span><span>텍스트로 담은 레시피</span></div></a><div class="card-content"><p class="card-meta"><span></span><time></time></p><h2><a href="#detail"></a></h2><p class="card-summary"></p><div class="card-bottom"><div class="tags"></div><button type="button" class="favorite"></button></div></div>`;
     const cover = card.querySelector('.cover');
@@ -62,7 +64,7 @@ function renderCards() {
     grid.append(card);
   });
   content.querySelector('.empty').hidden = sorted.length > 0;
-  content.querySelector('#result-count').textContent = `담아 둔 발견 ${sorted.length}개`;
+  content.querySelector('#result-count').textContent = direction === 'b2' ? `${sorted.length}개` : `담아 둔 발견 ${sorted.length}개`;
   content.querySelectorAll('.favorite-count').forEach(el => el.textContent = recipes.filter(recipe => recipe.favorite).length);
   content.querySelectorAll('[data-filter]').forEach(button => { const selected = button.dataset.filter === filter; button.setAttribute('aria-pressed', String(selected)); button.classList.toggle('selected', selected); });
 }
@@ -101,7 +103,28 @@ function renderPage(moveFocus = false) {
     content.querySelector('#recipe-form').addEventListener('submit', event => { event.preventDefault(); content.querySelector('#save-status').textContent = '입력 화면 예시예요. 실제 저장은 하지 않았으며 입력은 이 페이지에서 유지돼요.'; });
     content.querySelector('#capture-kind').addEventListener('change', () => { content.querySelector('#save-status').textContent = '입력 방식의 모양을 비교하는 시안이에요. 링크 수집은 연결하지 않았어요.'; });
   }
+  if (direction === 'b2') refineNotebook(page);
   if (moveFocus) { content.focus({preventScroll:true}); window.scrollTo(0, 0); }
+}
+function refineNotebook(page) {
+  if (page === 'library') {
+    content.querySelector('.intro').textContent = '다음에 또 만들어 먹을 것들.';
+    content.querySelector('#search').placeholder = '제목이나 재료로 찾기';
+    content.querySelector('.empty h2').textContent = '찾는 레시피가 없어요';
+    content.querySelector('.empty p').textContent = '검색어를 바꾸거나 전체 목록을 확인해 보세요.';
+  }
+  if (page === 'detail') {
+    content.querySelector('.ingredient-section .note strong').textContent = '원문에 없는 정보';
+    content.querySelector('.ingredient-section .note p').textContent = '인분·시간·온도는 미기재예요.';
+  }
+  if (page === 'editor') {
+    content.querySelector('h1').textContent = '레시피 담기';
+    content.querySelector('.intro').textContent = '가져온 내용과 내가 정리한 내용을 나란히 봐요.';
+    content.querySelector('.editor-source h2').textContent = '가져온 내용';
+    content.querySelector('.editor-result h2').textContent = '저장할 내용';
+    content.querySelector('.editor-source .note strong').textContent = '분량을 모르면 빈칸으로';
+    content.querySelector('.editor-source .note p').textContent = '적지 않아도 저장할 수 있어요.';
+  }
 }
 setDirection(direction);
 window.addEventListener('hashchange', () => { if (location.hash !== '#content') renderPage(true); });
