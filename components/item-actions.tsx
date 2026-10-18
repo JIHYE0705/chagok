@@ -3,9 +3,10 @@
 import { useActionState } from "react";
 import { favoriteAction, deleteItemAction } from "../app/(protected)/items/actions";
 
-export function FavoriteButton({ id, favorite }: { id: string; favorite: boolean }) {
+export function FavoriteButton({ id, favorite, compact = false }: { id: string; favorite: boolean; compact?: boolean }) {
   const [state, action, pending] = useActionState(favoriteAction.bind(null, id), { error: "" });
-  return <form action={action}><button className="soft-button" aria-pressed={favorite} disabled={pending}>{pending ? "변경 중…" : favorite ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기 추가"}</button>{state.error && <p role="alert">{state.error}</p>}</form>;
+  const label = pending ? "변경 중…" : favorite ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기 추가";
+  return <form action={action}><button className={`soft-button${compact ? " favorite-icon" : ""}`} aria-label={compact ? label : undefined} aria-pressed={favorite} disabled={pending}>{compact ? <span aria-hidden="true">{pending ? "…" : favorite ? "★" : "☆"}</span> : label}</button>{state.error && <p role="alert">{state.error}</p>}</form>;
 }
 
 export function DeleteItem({ id }: { id: string }) {

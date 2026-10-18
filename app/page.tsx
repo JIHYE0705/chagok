@@ -13,7 +13,7 @@ export default function Home() {
         <section className="welcome-hero" aria-labelledby="welcome-title">
           <div className="welcome-intro">
             <p className="eyebrow">발견한 정보를 차곡차곡</p>
-            <h1 id="welcome-title">차곡<span aria-hidden="true">.</span></h1>
+            <h1 id="welcome-title"><Image className="welcome-wordmark" src="/chagok-wordmark.svg" alt="차곡" width={215} height={113} loading="eager" /></h1>
             <p className="welcome-tagline">좋은 발견이<br />나만의 기록이 되는 곳.</p>
             <p className="welcome-copy">다시 만들고 싶은 레시피도,<br />잊고 싶지 않은 작은 팁도 한곳에.</p>
           </div>

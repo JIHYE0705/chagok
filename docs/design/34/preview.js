@@ -8,6 +8,9 @@ const recipes = [
 const content = document.getElementById('content');
 const params = new URLSearchParams(location.search);
 let direction = ['a', 'b', 'b2'].includes(params.get('direction')) ? params.get('direction') : 'a';
+let libraryView = 'cards';
+try { if (localStorage.getItem('chagok:library-view') === 'list') libraryView = 'list'; } catch { /* View selection works without storage. */ }
+document.body.dataset.view = libraryView;
 let filter = 'all';
 let query = '';
 const drafts = new Map();
@@ -103,6 +106,15 @@ function renderPage(moveFocus = false) {
     content.querySelector('#recipe-form').addEventListener('submit', event => { event.preventDefault(); content.querySelector('#save-status').textContent = '입력 화면 예시예요. 실제 저장은 하지 않았으며 입력은 이 페이지에서 유지돼요.'; });
     content.querySelector('#capture-kind').addEventListener('change', () => { content.querySelector('#save-status').textContent = '입력 방식의 모양을 비교하는 시안이에요. 링크 수집은 연결하지 않았어요.'; });
   }
+  content.querySelectorAll('[data-view]').forEach(button => {
+    button.setAttribute('aria-pressed', String(button.dataset.view === libraryView));
+    button.addEventListener('click', () => {
+      libraryView = button.dataset.view;
+      document.body.dataset.view = libraryView;
+      try { localStorage.setItem('chagok:library-view', libraryView); } catch { /* View selection works without storage. */ }
+      content.querySelectorAll('[data-view]').forEach(choice => choice.setAttribute('aria-pressed', String(choice.dataset.view === libraryView)));
+    });
+  });
   if (direction === 'b2') refineNotebook(page);
   if (moveFocus) { content.focus({preventScroll:true}); window.scrollTo(0, 0); }
 }
