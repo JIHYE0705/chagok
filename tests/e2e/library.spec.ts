@@ -106,6 +106,7 @@ test.describe("linked Supabase library", () => {
     const externalFonts: string[] = [];
     page.on("request", request => { if (request.resourceType() === "font" && new URL(request.url()).hostname !== "127.0.0.1") externalFonts.push(request.url()); });
     await page.goto(`/items/${saved.data}`);
+    await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
     // A valid one-pixel PNG tests private Storage and cover delivery, not food photography.
     await page.getByLabel("첨부 파일 선택").setInputFiles({ name: "표지.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jW3sAAAAASUVORK5CYII=", "base64") });
     await page.getByRole("button", { name: "첨부하기", exact: true }).click();
