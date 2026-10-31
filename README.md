@@ -227,6 +227,17 @@ CI의 **App Checks**는 타입·단위 테스트·lint·빌드·공개 화면 E2
 **Linked Supabase DB**는 저장소 Variable `SUPABASE_PROJECT_REF`와 Secret `SUPABASE_ACCESS_TOKEN`을 설정한 경우 연결된 프로젝트에서 DB 검사를 실행합니다.
 설정하지 않으면 해당 DB job은 생략됩니다. 원격 Auth 관리자 키를 쓰는 E2E는 수동으로 실행합니다.
 
+## 배포 리전
+
+`vercel.json`은 Vercel Functions를 서울(`icn1`)에 배포하도록 지정합니다.
+설정은 다음 배포부터 적용되므로 배포 후 함수의 실제 실행 리전을 확인합니다.
+정적 파일은 Vercel CDN으로 제공됩니다.
+
+Supabase 서울(`ap-northeast-2`) 이전은 별도 작업입니다.
+DB·Auth·Storage와 OAuth 설정을 이전하고 실제 로그인·첨부파일을 검증한 뒤
+앱 환경변수를 전환합니다. 원본 프로젝트는 검증 완료까지 보존합니다.
+이전 진행 상태와 운영 검증은 [#37](https://github.com/JIHYE0705/chagok/issues/37)에서 추적합니다.
+
 ## 개발 흐름
 
 개발 작업은 항상 GitHub 이슈에서 시작합니다.
