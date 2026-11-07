@@ -1,6 +1,6 @@
 # 보관함 대표 시안 · #43
 
-2026-11-07 · 기준 `38fa696` · **제안 상태, 실제 앱 미적용**
+2026-11-07 · 기준 `38fa696` · **당시 제안 시안. 후속 실제 적용은 [결정 기록](../DECISIONS.md)을 참고한다.**
 
 [디자인 시스템](../DESIGN_SYSTEM.md)과 [결정 기록](../DECISIONS.md)의 Playful Minimalism 방향을 HTML로 검토한다. 같은 네 항목을 카드형·목록형으로 전환하고, 현재 나눔스퀘어라운드 400/700과 후보 Pretendard 400/600을 비교할 수 있다. 이 시안의 승인과 앱 구현 완료는 별개다.
 
@@ -36,7 +36,7 @@ python3 -m http.server 8043 --bind 127.0.0.1
 
 ## 자산과 한계
 
-Pretendard는 [공식 v1.3.9](https://github.com/orioncactus/pretendard/tree/v1.3.9/packages/pretendard/dist/web/static/woff2)의 정적 Regular/SemiBold를 내려받아 로컬 제공하며 [OFL](fonts/OFL.txt)을 동봉했다. 현재 폰트는 기존 앱 파일을 참조한다. 외부 폰트 CDN·추가 패키지는 없다.
+Pretendard는 [공식 v1.3.9](https://github.com/orioncactus/pretendard/tree/v1.3.9/packages/pretendard/dist/web/static/woff2)의 정적 Regular/SemiBold를 내려받아 로컬 제공하며 [OFL](../../../app/fonts/Pretendard-OFL.txt)을 동봉했다. 현재 폰트는 기존 앱 파일을 참조한다. 외부 폰트 CDN·추가 패키지는 없다.
 
 | 후보 | 실제 파일 바이트 |
 | --- | ---: |
