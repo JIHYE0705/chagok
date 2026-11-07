@@ -3,13 +3,14 @@ import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import "./globals.css";
 
-const nanumSquareRound = localFont({
+const pretendard = localFont({
   src: [
-    { path: "./fonts/NanumSquareRound-Regular.woff2", weight: "400", style: "normal" },
-    { path: "./fonts/NanumSquareRound-Bold.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/Pretendard-Regular.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/Pretendard-SemiBold.woff2", weight: "600", style: "normal" },
   ],
   display: "swap",
-  variable: "--font-nanum-square-round",
+  variable: "--font-pretendard",
+  fallback: ["Apple SD Gothic Neo", "Arial", "sans-serif"],
 });
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="ko" className={nanumSquareRound.variable}>
+    <html lang="ko" className={pretendard.variable}>
       <body>{children}</body>
     </html>
   );

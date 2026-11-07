@@ -70,7 +70,8 @@ export function supabaseFixtures() {
   async function cleanup() {
     const status = linkedSupabase();
     const admin = createClient(status.API_URL, status.SERVICE_ROLE_KEY, { auth: { persistSession: false } });
-    for (const id of users) {
+    while (users.length) {
+      const id = users[0];
       const attachments = await admin.from("attachments").select("storage_path").eq("user_id", id);
       if (attachments.error) throw new Error("Could not list linked fixture files.");
       if (attachments.data.length) {
@@ -80,11 +81,13 @@ export function supabaseFixtures() {
         if (metadata.error) throw new Error("Could not clean linked attachment metadata.");
       }
       const { error } = await admin.auth.admin.deleteUser(id);
-      if (error) throw new Error("Could not clean linked user fixture.");
+      if (error) throw new Error(`Could not clean linked user fixture: ${error.message}`);
+      users.shift();
     }
     if (subjects.length) {
       const { error } = await admin.from("access_allowlist").delete().in("google_subject", subjects);
       if (error) throw new Error("Could not clean linked invite fixtures.");
+      subjects.length = 0;
     }
   }
   return { session, cleanup };

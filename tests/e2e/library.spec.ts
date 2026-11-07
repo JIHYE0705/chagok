@@ -96,7 +96,7 @@ test.describe("linked Supabase library", () => {
     await expect(page.getByRole("heading", { name: "보존할 제목" })).toBeVisible();
   });
 
-  test("both library views retain private covers, long titles and a local rounded font at every width", async ({ page, context }) => {
+  test("both library views retain private covers, long titles and local Pretendard at every width", async ({ page, context }) => {
     test.setTimeout(120000);
     const owner = await session(context, true);
     const title = "냉장고 속 남은 재료로 만드는 주말 한 끼 — 바쁜 날에도 꺼내 보기 좋은 초간단 레시피와 재료 보관 팁까지 차곡차곡 모아 두기";
@@ -124,11 +124,20 @@ test.describe("linked Supabase library", () => {
         await expect.poll(() => card.locator("img").evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
         await page.evaluate(() => document.fonts.ready);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        await expect(page.locator(".item-card .cover-placeholder")).toBeHidden();
+        const tooSmall = await page.locator(".library-page button, .library-page input:not([type=checkbox]), .library-page select, .library-page .check-label, .library-page .tag-chip, .library-page h2 a").evaluateAll(elements => elements.filter(element => {
+          const box = element.getBoundingClientRect();
+          return box.width > 0 && box.height > 0 && (box.width < 44 || box.height < 44);
+        }).map(element => element.outerHTML));
+        expect(tooSmall).toEqual([]);
         if (width === 320 || width === 1440) await page.screenshot({ path: `output/playwright/library-${view}-${width}.png`, fullPage: true });
       }
     }
-    expect(await page.evaluate(() => [...document.fonts].some(font => font.status === "loaded" && font.family.includes("nanumSquareRound")))).toBe(true);
+    expect(await page.evaluate(() => [...document.fonts].some(font => font.status === "loaded" && font.family.includes("pretendard")))).toBe(true);
     expect(externalFonts).toEqual([]);
+    await card.getByRole("link", { name: title, exact: true }).focus();
+    await expect(card.getByRole("link", { name: title, exact: true })).toBeFocused();
+    expect(await card.getByRole("link", { name: title, exact: true }).evaluate(element => getComputedStyle(element).outlineWidth)).toBe("3px");
     await card.getByRole("link", { name: title, exact: true }).click();
     await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
   });

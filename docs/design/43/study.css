@@ -1,5 +1,5 @@
-@font-face{font-family:Pretendard;src:url(fonts/Pretendard-Regular.woff2) format('woff2');font-weight:400;font-display:swap}
-@font-face{font-family:Pretendard;src:url(fonts/Pretendard-SemiBold.woff2) format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:Pretendard;src:url(../../../app/fonts/Pretendard-Regular.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Pretendard;src:url(../../../app/fonts/Pretendard-SemiBold.woff2) format('woff2');font-weight:600;font-display:swap}
 @font-face{font-family:Nanum;src:url(../../../app/fonts/NanumSquareRound-Regular.woff2) format('woff2');font-weight:400;font-display:swap}
 @font-face{font-family:Nanum;src:url(../../../app/fonts/NanumSquareRound-Bold.woff2) format('woff2');font-weight:700;font-display:swap}
 :root{--bg:#fffefb;--surface:#fff;--text:#292824;--secondary:#777765;--tint-text:#656553;--accent:#f4c84b;--tint:#fff8e7;--divider:#e5e2d8;--border:#858572;--focus:#62624f;--font:Pretendard;--strong:600}

@@ -12,7 +12,8 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     <main className="app-shell protected-shell" data-testid="app-shell">
       <div className="welcome-card protected-card">
         <header className="welcome-header">
-          <Link className="wordmark brand-mark" href="/items" aria-label="차곡 보관함"><Image className="brand-character" src="/chagok-note.svg" alt="" width={44} height={44} loading="eager" /><Image className="brand-wordmark" src="/chagok-wordmark.svg" alt="차곡" width={76} height={40} loading="eager" /></Link>
+          <Link className="wordmark brand-mark" href="/items" aria-label="차곡 보관함"><Image className="brand-wordmark" src="/chagok-wordmark.svg" alt="차곡" width={76} height={40} loading="eager" /></Link>
+          <p className="header-caption muted">나만의 레시피 아카이브</p>
           <form action={signOut}><SubmitButton pending="로그아웃 중…">로그아웃</SubmitButton></form>
         </header>
         {children}
