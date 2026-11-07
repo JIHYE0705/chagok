@@ -40,6 +40,7 @@ test.describe("safe link capture", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await page.getByRole("button", { name: "저장하기", exact: true }).click();
     await expect(page).toHaveURL(/\/items\/[a-f0-9-]+$/);
+    await expect(page.locator(".detail-collection-note")).toBeVisible();
     await expect(page.getByText("공개 제목·설명 메타데이터를 수집한 기록이에요.", { exact: false })).toBeVisible();
     await page.getByText("원문 근거와 확인 상태", { exact: true }).click();
     await expect(page.locator(".evidence-panel li").filter({ hasText: "설명 메타데이터 · 미기재" })).toBeVisible();

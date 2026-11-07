@@ -40,7 +40,7 @@ test.describe("manual capture", () => {
     await page.getByRole("button", { name: "저장하기", exact: true }).click();
     await expect(page).toHaveURL(/\/items\/[a-f0-9-]+$/);
     await expect(page.getByRole("heading", { name: "고구마 누룽지", exact: true })).toBeVisible();
-    await expect(page.getByText("고구마 · 분량 미기재", { exact: true })).toBeVisible();
+    await expect(page.locator(".ingredient-list > div").filter({ has: page.getByText("고구마", { exact: true }) }).locator("dd")).toHaveText("분량 미기재");
     await page.getByText("보존한 원문", { exact: true }).click();
     await expect(page.locator("details").filter({ hasText: "보존한 원문" }).locator("p")).toHaveText(raw);
     await page.getByRole("link", { name: "수정하기" }).click();
@@ -48,8 +48,10 @@ test.describe("manual capture", () => {
     await page.getByLabel("재료와 분량").fill("고구마 | 200g\n올리브유");
     await page.getByLabel("조리 단계", { exact: true }).fill("얇게 펴요\n구워요 | 15분 | 180도");
     await page.getByRole("button", { name: "저장하기", exact: true }).click();
-    await expect(page.getByText("고구마 · 200g", { exact: true })).toBeVisible();
-    await expect(page.getByText("구워요 · 15분 · 180도", { exact: true })).toBeVisible();
+    await expect(page.locator(".ingredient-list > div").filter({ has: page.getByText("고구마", { exact: true }) }).locator("dd")).toHaveText("200g");
+    const step = page.locator(".recipe-steps li").filter({ hasText: "구워요" });
+    await expect(step).toContainText("시간 15분");
+    await expect(step).toContainText("온도 180도");
   });
 
   test("link without content preserves the URL and explicitly reports failed extraction", async ({ page, context }) => {
