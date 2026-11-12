@@ -78,31 +78,36 @@ function Editor({ ownerId, id = null, initial }: Props) {
     <form action={action} className="item-form">
       <input type="hidden" name="saveKey" value={fields.saveKey} /><input type="hidden" name="capture" value="yes" /><input type="hidden" name="sourceId" value={capture?.sourceId ?? ""} /><input type="hidden" name="extractionKey" value={fields.extractionKey} />
       <fieldset disabled={pending || Boolean(state.saved)}>
-        <div className="item-field"><label htmlFor="capture-kind">입력 방식</label><select id="capture-kind" name="kind" value={fields.kind} onChange={(e) => change("kind", e.target.value)}><option value="manual">직접 작성</option><option value="text">텍스트 붙여넣기</option><option value="link">링크 가져오기</option></select></div>
-        <div className="item-field"><label htmlFor="source-url">원본 링크</label><input id="source-url" name="sourceUrl" type="url" value={fields.sourceUrl} onChange={(e) => change("sourceUrl", e.target.value)} maxLength={2000} required={fields.kind === "link"} /></div>
-        {fields.kind === "link" && <LinkCapture key={fields.sourceUrl} url={fields.sourceUrl} requestKey={fields.linkRequestKey} onRequestKey={(key) => change("linkRequestKey", key)} onApply={(result, key) => {
-          if ((fields.title || fields.rawText || fields.body) && !window.confirm("작성한 제목·본문·원문을 수집한 메타데이터로 바꿀까요?")) return;
-          update({ ...fields, sourceUrl: result.canonicalUrl, title: result.title ?? "", body: result.description ?? "", rawText: [result.title, result.description].filter(Boolean).join("\n"), author: result.author || fields.author, extractionKey: key, linkRequestKey: key });
-        }} />}
-        <div className="item-field"><label htmlFor="source-author">출처 작성자</label><input id="source-author" name="author" value={fields.author} onChange={(e) => change("author", e.target.value)} maxLength={200} /></div>
-        <div className="item-field"><label htmlFor="raw-text">원문</label><textarea id="raw-text" name="rawText" value={fields.rawText} onChange={(e) => change("rawText", e.target.value)} rows={8} maxLength={50000} /></div>
-        <button type="button" className="soft-button" onClick={normalize} disabled={!fields.rawText.trim()}>원문에서 후보 정리</button>
-        {draft.truncated && <p role="alert">재료·단계 후보는 각각 처음 100개까지만 정리해요. 전체 원문은 보존하며, 나머지는 별도 항목으로 나누어 저장해 주세요.</p>}
-        <EvidencePanel evidence={draft.evidence} />
-        <h2>정리 결과 · 저장 전 확인</h2>
-        <div className="item-field"><label htmlFor="item-title">제목</label><input id="item-title" name="title" value={fields.title} onChange={(e) => change("title", e.target.value)} required maxLength={200} autoComplete="off" /></div>
-        <div className="item-field"><label htmlFor="item-summary">요약</label><textarea id="item-summary" name="summary" value={fields.summary} onChange={(e) => change("summary", e.target.value)} rows={2} maxLength={1000} /></div>
-        <div className="item-field"><label htmlFor="item-body">본문</label><textarea id="item-body" name="body" value={fields.body} onChange={(e) => change("body", e.target.value)} rows={10} maxLength={50000} /></div>
-        <div className="item-field"><label htmlFor="recipe-ingredients">재료와 분량</label><textarea id="recipe-ingredients" name="ingredients" value={fields.ingredients} onChange={(e) => change("ingredients", e.target.value)} rows={5} maxLength={50000} aria-describedby="ingredients-help" /><p id="ingredients-help" className="muted">한 줄에 하나씩 이름 | 분량. 예: 고구마 | 200g. 분량을 모르면 이름만 적어 주세요.</p></div>
-        <div className="item-field"><label htmlFor="recipe-steps">조리 단계</label><textarea id="recipe-steps" name="steps" value={fields.steps} onChange={(e) => change("steps", e.target.value)} rows={5} maxLength={50000} aria-describedby="steps-help" /><p id="steps-help" className="muted">한 줄에 한 단계씩 내용 | 시간 | 온도. 모르는 시간·온도는 비워 두세요.</p></div>
-        {Object.entries(recipeFields).map(([key, label]) => <div className="item-field" key={key}><label htmlFor={`recipe-${key}`}>{label}</label><textarea id={`recipe-${key}`} name={key} value={fields[key as keyof typeof recipeFields]} onChange={(e) => change(key as keyof typeof fields, e.target.value)} rows={key === "tips" ? 3 : 1} maxLength={key === "tips" ? 10000 : 1000} placeholder="미기재" /></div>)}
-        <div className="item-field"><label htmlFor="item-notes">메모</label><textarea id="item-notes" name="notes" value={fields.notes} onChange={(e) => change("notes", e.target.value)} rows={3} maxLength={10000} /></div>
-        <div className="item-field"><label htmlFor="item-tags">태그</label><input id="item-tags" name="tags" value={fields.tags} onChange={(e) => change("tags", e.target.value)} aria-describedby="tag-help" /></div>
-        <p id="tag-help" className="muted">쉼표로 구분해 주세요. 예: 간식, 다시 만들기 · 최대 20개</p>
+        <section className="editor-section" aria-labelledby="source-heading">
+          <header><h2 id="source-heading">원문·출처</h2><p className="muted">가져올 내용이 있으면 먼저 남겨 주세요. 직접 작성할 때는 비워도 괜찮아요.</p></header>
+          <div className="item-field"><label htmlFor="capture-kind">입력 방식</label><select id="capture-kind" name="kind" aria-describedby="capture-help" value={fields.kind} onChange={(e) => change("kind", e.target.value)}><option value="manual">직접 작성</option><option value="text">텍스트 붙여넣기</option><option value="link">링크 가져오기</option></select><p id="capture-help" className="muted">링크로 공개 제목·설명을 가져오거나, 원문을 붙여넣어 정리할 수 있어요.</p></div>
+          <div className="item-field"><div className="field-label"><label htmlFor="source-url">원본 링크</label><span className="field-requirement" aria-hidden="true">{fields.kind === "link" ? "필수" : "선택"}</span></div><input id="source-url" name="sourceUrl" type="url" aria-describedby="source-url-help" value={fields.sourceUrl} onChange={(e) => change("sourceUrl", e.target.value)} maxLength={2000} required={fields.kind === "link"} /><p id="source-url-help" className="muted">{fields.kind === "link" ? "링크 방식에서는 원본 링크가 필요해요. 가져오기는 YouTube·Instagram의 공개 메타데이터만 지원해요." : "출처가 있으면 함께 남겨 주세요. 선택 항목이에요."}</p></div>
+          {fields.kind === "link" && <LinkCapture key={fields.sourceUrl} url={fields.sourceUrl} requestKey={fields.linkRequestKey} onRequestKey={(key) => change("linkRequestKey", key)} onApply={(result, key) => {
+            if ((fields.title || fields.rawText || fields.body) && !window.confirm("작성한 제목·본문·원문을 수집한 메타데이터로 바꿀까요?")) return;
+            update({ ...fields, sourceUrl: result.canonicalUrl, title: result.title ?? "", body: result.description ?? "", rawText: [result.title, result.description].filter(Boolean).join("\n"), author: result.author || fields.author, extractionKey: key, linkRequestKey: key });
+          }} />}
+          <div className="item-field"><label htmlFor="source-author">출처 작성자</label><input id="source-author" name="author" value={fields.author} onChange={(e) => change("author", e.target.value)} maxLength={200} /></div>
+          <div className="item-field"><label htmlFor="raw-text">원문</label><textarea id="raw-text" name="rawText" value={fields.rawText} onChange={(e) => change("rawText", e.target.value)} rows={6} maxLength={50000} /></div>
+          <button type="button" className="soft-button" onClick={normalize} disabled={!fields.rawText.trim()}>원문에서 후보 정리</button>
+          {draft.truncated && <p role="alert">재료·단계 후보는 각각 처음 100개까지만 정리해요. 전체 원문은 보존하며, 나머지는 별도 항목으로 나누어 저장해 주세요.</p>}
+          <EvidencePanel evidence={draft.evidence} />
+        </section>
+        <section className="editor-section" aria-labelledby="result-heading">
+          <header><h2 id="result-heading">저장할 내용</h2><p id="required-help" className="muted">제목은 필수예요. 나머지는 아는 내용만 적고, 정리한 후보는 원문과 비교해 주세요.</p></header>
+          <div className="item-field"><div className="field-label"><label htmlFor="item-title">제목</label><span className="field-requirement" aria-hidden="true">필수</span></div><input id="item-title" name="title" aria-describedby="required-help" value={fields.title} onChange={(e) => change("title", e.target.value)} required maxLength={200} autoComplete="off" /></div>
+          <div className="item-field"><label htmlFor="item-summary">요약</label><textarea id="item-summary" name="summary" value={fields.summary} onChange={(e) => change("summary", e.target.value)} rows={2} maxLength={1000} /></div>
+          <div className="item-field"><label htmlFor="item-body">본문</label><textarea id="item-body" name="body" value={fields.body} onChange={(e) => change("body", e.target.value)} rows={6} maxLength={50000} /></div>
+          <div className="item-field"><label htmlFor="recipe-ingredients">재료와 분량</label><textarea id="recipe-ingredients" name="ingredients" value={fields.ingredients} onChange={(e) => change("ingredients", e.target.value)} rows={5} maxLength={50000} aria-describedby="ingredients-help" /><p id="ingredients-help" className="muted">한 줄에 하나씩 이름 | 분량. 예: 고구마 | 200g. 분량을 모르면 이름만 적어 주세요.</p></div>
+          <div className="item-field"><label htmlFor="recipe-steps">조리 단계</label><textarea id="recipe-steps" name="steps" value={fields.steps} onChange={(e) => change("steps", e.target.value)} rows={5} maxLength={50000} aria-describedby="steps-help" /><p id="steps-help" className="muted">한 줄에 한 단계씩 내용 | 시간 | 온도. 모르는 시간·온도는 비워 두세요.</p></div>
+          <div className="recipe-fields">{Object.entries(recipeFields).map(([key, label]) => <div className={`item-field${key === "tips" ? " recipe-tips" : ""}`} key={key}><label htmlFor={`recipe-${key}`}>{label}</label><textarea id={`recipe-${key}`} name={key} value={fields[key as keyof typeof recipeFields]} onChange={(e) => change(key as keyof typeof fields, e.target.value)} rows={key === "tips" ? 3 : 1} maxLength={key === "tips" ? 10000 : 1000} placeholder="미기재" /></div>)}</div>
+          <div className="item-field"><label htmlFor="item-notes">메모</label><textarea id="item-notes" name="notes" value={fields.notes} onChange={(e) => change("notes", e.target.value)} rows={3} maxLength={10000} /></div>
+          <div className="item-field"><label htmlFor="item-tags">태그</label><input id="item-tags" name="tags" value={fields.tags} onChange={(e) => change("tags", e.target.value)} aria-describedby="tag-help" /></div>
+          <p id="tag-help" className="muted">쉼표로 구분해 주세요. 예: 간식, 다시 만들기 · 최대 20개</p>
+        </section>
       </fieldset>
       {warning && <p role="status" className="muted">{warning}</p>}
       {state.error && <p role="alert" className="auth-message">{state.error}</p>}
-      <div className="library-toolbar"><button className="auth-button" disabled={pending || Boolean(state.saved)}>{pending || state.saved ? "저장 중…" : "저장하기"}</button><Link href={id ? `/items/${id}` : "/items"}>취소</Link></div>
+      <div className="editor-actions"><p className="muted" role={pending || state.saved ? "status" : undefined}>{state.saved ? "저장했어요. 상세 화면으로 이동하고 있어요." : pending ? "저장하고 있어요. 잠시만 기다려 주세요." : "저장하면 상세 화면에서 내용을 확인할 수 있어요."}</p><div className="editor-buttons"><button className="auth-button" disabled={pending || Boolean(state.saved)}>{state.saved ? "저장 완료" : pending ? "저장 중…" : "저장하기"}</button><Link href={id ? `/items/${id}` : "/items"}>취소</Link></div></div>
     </form>
   );
 }
